@@ -2,7 +2,7 @@
 
 Interaktiver Business-Plan-Generator für Padel-Anlagen — von der Idee bis zum Investorengespräch. Mehrjahres-Forecasts, Standort-Scoring, DSCR, Cashflow-Plan, Excel-/PDF-Export.
 
-**Live-Demo (nach Deployment):** `https://<dein-github-user>.github.io/padel-businessplan/`
+**Live-Demo (nach Deployment):** `https://bllshit.github.io/scc-business-planer/`
 
 ---
 
