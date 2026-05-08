@@ -2,26 +2,34 @@
 
 Interaktiver Business-Plan-Generator für Padel-Anlagen — von der Idee bis zum Investorengespräch. Mehrjahres-Forecasts, Standort-Scoring, DSCR, Cashflow-Plan, Excel-/PDF-Export.
 
-**Live-Demo (nach Deployment):** `https://bllshit.github.io/scc-business-planer/`
+**Live-Demo (nach Deployment):** `https://<dein-github-user>.github.io/padel-businessplan/`
 
 ---
 
-## Was ist drin
+## Setup in 3 Schritten
 
-- **`index.html`** — der komplette Generator (Single-File, kein Build-Step nötig)
-- **`supabase/schema.sql`** — Datenbank-Schema mit Row-Level-Security
-- **`supabase-integration.js`** — Login, Speichern, Laden, Liste, Löschen
-- **`config.example.js`** — Vorlage für deine Supabase-URL + Anon-Key
-- **`integration-howto.md`** — wie du die Supabase-Anbindung in `index.html` aktivierst
-- **`.gitignore`** — schützt `config.js` und Lokales
+### 1. Supabase-Projekt anlegen
 
-Ohne Supabase funktioniert die App auch — sie speichert dann automatisch in LocalStorage.
+1. Auf [supabase.com](https://supabase.com) ein neues Projekt erstellen (Region: **EU** für DSGVO).
+2. Im **SQL-Editor** den Inhalt von `supabase/schema.sql` einfügen → **Run**.
+3. **Project Settings → API** → notiere `Project URL` und `anon public` Key.
+4. **Authentication → Providers → Email** aktivieren (Magic Link reicht).
 
----
+### 2. URL und Key in `index.html` eintragen
 
-## Setup-Anleitung
+Öffne `index.html` und finde ganz oben (ca. Zeile 25) den Block:
 
-### 1. GitHub-Repo anlegen
+```js
+window.SUPABASE_CONFIG = {
+  url:     '',  // ← hier eintragen, z.B. 'https://abcdefgh.supabase.co'
+  anonKey: '',  // ← hier eintragen, der lange "anon public" JWT-String
+  ...
+};
+```
+
+Beide Strings ausfüllen. Datei speichern. **Fertig.**
+
+### 3. Zu GitHub pushen + Pages aktivieren
 
 ```bash
 cd "/Pfad/zu/diesem/Ordner"
@@ -33,44 +41,68 @@ git remote add origin git@github.com:<dein-user>/padel-businessplan.git
 git push -u origin main
 ```
 
-Im Repo-Settings → **Pages** → Branch `main`, Folder `/ (root)`, **Save**. Nach 1–2 Minuten ist die App unter `https://<dein-user>.github.io/padel-businessplan/` erreichbar.
+Im Repo: **Settings → Pages → Branch `main`, Folder `/ (root)` → Save**.
 
-### 2. Supabase-Projekt anlegen
+Nach 1–2 Minuten ist die App live unter `https://<dein-user>.github.io/padel-businessplan/`.
 
-1. Auf [supabase.com](https://supabase.com) ein neues Projekt erstellen (Region: EU für DSGVO).
-2. SQL-Editor öffnen → Inhalt von `supabase/schema.sql` einfügen → **Run**.
-3. **Project Settings → API** → notiere `Project URL` und `anon public` Key.
+---
 
-### 3. Konfiguration
+## Was passiert ohne Supabase-Konfig?
 
-```bash
-cp config.example.js config.js
+Wenn `url` und `anonKey` leer bleiben, läuft die App im **LocalStorage-only-Modus**:
+- Eingaben werden lokal im Browser gespeichert (Autosave)
+- JSON-Export/Import funktioniert
+- Keine Login-Box oben rechts
+- Keine Cloud-Speicherung, keine Multi-Plan-Verwaltung
+
+Das ist ein gültiger Setup, falls du den Generator allein nutzen willst.
+
+---
+
+## Mit Supabase aktiv
+
+Sobald du einen Account in der App anlegst (Magic Link via Email), erscheinen oben rechts:
+
+- **🔑 Login** → Magic Link via Email anfordern
+- **💾 Speichern** → aktuellen Plan in Supabase ablegen (mit Namen)
+- **☁ Pläne** → Liste aller eigenen Pläne, Laden / Löschen
+
+Jeder Save legt zusätzlich eine Versionskopie in `business_plan_versions` an — du kannst nichts versehentlich überschreiben.
+
+---
+
+## Sicherheit & Datenschutz
+
+- Alle Pläne sind per **Row-Level-Security** an die User-ID gebunden
+- Niemand kann fremde Pläne lesen oder schreiben — auch nicht mit dem Anon-Key
+- Der `anon public` Key darf öffentlich im Quellcode stehen (das ist sein Designziel) — er gibt nur Zugriff auf das, was die RLS-Policies erlauben
+- Keine sensiblen Daten (Kreditkarten, IBAN) im Datenmodell
+- DSGVO-konform bei Hosting in EU-Region
+
+---
+
+## Repo-Struktur
+
+```
+.
+├── index.html              ← der Generator (alles inline, inkl. Supabase-Integration)
+├── supabase/
+│   └── schema.sql          ← einmalig in Supabase ausführen
+├── README.md
+├── LICENSE
+└── .gitignore
 ```
 
-`config.js` öffnen und einfügen:
+Optionale Backup-Dateien (für modulare Setups):
+- `config.example.js` — Vorlage falls du die Config in eine eigene Datei auslagern willst
+- `supabase-integration.js` — der Integrationscode als separate Datei
+- `integration-howto.md` — alternative Anleitung mit getrennten Dateien
 
-```js
-window.SUPABASE_CONFIG = {
-  url: 'https://<dein-projekt>.supabase.co',
-  anonKey: 'eyJhbGciOi...'
-};
-```
-
-> ⚠️ `config.js` ist in `.gitignore` — wird nicht zu GitHub gepusht. Den Anon-Key kannst du theoretisch öffentlich machen (er ist nur durch RLS geschützt), trotzdem behandle ihn wie ein Secret.
-
-### 4. Auth aktivieren
-
-In Supabase → **Authentication → Providers** → **Email** aktivieren (Magic Link reicht für den Anfang). Optional: Google OAuth, GitHub OAuth.
-
-### 5. Integration einbauen
-
-Siehe `integration-howto.md` — drei Skript-Tags und ein Login-Button-Block in `index.html`.
+Diese Dateien werden vom aktuellen Setup **nicht benötigt** — `index.html` ist self-contained.
 
 ---
 
 ## Features
-
-### Bereits in `index.html` enthalten
 
 - 8-Schritt-Wizard (Projekt → Standort → Courts → Auslastung → Umsätze → Kosten → Finanzierung → Generieren)
 - Standort-Scoring (Demografie, Konkurrenz, Verkehr, Parkplätze)
@@ -83,22 +115,7 @@ Siehe `integration-howto.md` — drei Skript-Tags und ein Login-Button-Block in 
 - Excel-Export (9 Sheets), PDF-Export, PNG-Export
 - LocalStorage Autosave + JSON Export/Import + Reset
 - MwSt-Toggle Netto/Brutto
-
-### Über Supabase (optional)
-
-- Cloud-Speicherung mehrerer Pläne (z.B. mehrere Standortvarianten)
-- Multi-User: Team-Mitglieder können auf eigene Pläne zugreifen
-- Versionierung (jeder Save = neue Version)
-- Plan-Sharing per Link (Read-Only-Modus)
-
----
-
-## Sicherheit & Datenschutz
-
-- Alle Pläne sind per **Row-Level-Security** an die User-ID gebunden
-- Niemand kann fremde Pläne lesen oder schreiben — auch nicht mit dem Anon-Key
-- Keine sensiblen Daten (Kreditkarten, IBAN, etc.) im Datenmodell
-- DSGVO-konform bei Hosting in EU-Region
+- Optional: Supabase Cloud-Speicher mit Multi-Plan, Versionierung, Magic-Link-Login
 
 ---
 

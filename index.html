@@ -8,6 +8,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SUPABASE-KONFIGURATION
+     ════════════════════════════════════════════════════════════════════
+     1. Auf https://supabase.com ein Projekt anlegen (Region EU empfohlen)
+     2. Im SQL-Editor `supabase/schema.sql` ausführen
+     3. Project Settings → API: URL und "anon public" Key kopieren
+     4. Unten die beiden Strings ersetzen — fertig.
+
+     Wenn du die App ohne Cloud-Speicher laufen lassen willst, einfach
+     die Werte auf '' lassen — die App speichert dann nur lokal (LocalStorage).
+     ════════════════════════════════════════════════════════════════════ -->
+<script>
+window.SUPABASE_CONFIG = {
+  url:     '',  // ← hier eintragen, z.B. 'https://abcdefgh.supabase.co'
+  anonKey: '',  // ← hier eintragen, der lange "anon public" JWT-String
+
+  appName: 'Padel Business Plan Matrix',
+  authRedirectTo: window.location.origin + window.location.pathname
+};
+</script>
+
 <style>
 :root{--navy:#036147;--blue:#047a5a;--lightblue:#a8d5c4;--sky:#f6f3ee;--green:#036147;--lightgreen:#d4ede7;--yellow:#c8e6d9;--gray:#F5F2ED;--border:#D8D4CE;--text:#1a1a1a;--muted:#5a5a5a;--white:#FFFFFF;--red:#C00000;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1712,5 +1735,168 @@ calcInvGesamt(); // baut auch updateInvTable mit auf
 // Falls LocalStorage Investoren-Daten hatte, jetzt Werte zurückspielen
 try{const raw=localStorage.getItem(LS_KEY);if(raw){const st=JSON.parse(raw);(st.investors||[]).forEach((inv,i)=>{const row=document.querySelectorAll('#inv-detail-body tr')[i];if(row){const n=row.querySelector('.inv-name'),c=row.querySelector('.inv-capital');if(n&&inv.name)n.value=inv.name;if(c&&inv.capital)c.value=inv.capital;}});updateInvShares();}}catch(e){}
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SUPABASE INTEGRATION — Login, Cloud-Speicher, Multi-Plan-Verwaltung
+     Aktiviert sich automatisch, sobald oben URL + anonKey gesetzt sind.
+     Ohne Konfiguration läuft die App im LocalStorage-only-Modus.
+     ════════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  if(!window.SUPABASE_CONFIG||!window.SUPABASE_CONFIG.url||!window.SUPABASE_CONFIG.anonKey){
+    console.info('[Padel BP] Supabase nicht konfiguriert — laufe nur lokal (LocalStorage).');
+    return;
+  }
+  if(typeof supabase==='undefined'||!supabase.createClient){
+    console.warn('[Padel BP] Supabase-JS-SDK nicht geladen.');
+    return;
+  }
+  const sb=supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  window.sb=sb;
+  let currentUser=null,currentPlanId=null;
+
+  function injectAuthUI(){
+    const bar=document.createElement('div');
+    bar.id='sb-bar';
+    bar.style.cssText='position:fixed;top:12px;right:12px;background:white;border:1px solid #D8D4CE;border-radius:10px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:1000;display:flex;align-items:center;gap:8px;font-size:0.85rem;font-family:-apple-system,Arial,sans-serif;';
+    bar.innerHTML=`
+      <div id="sb-status" style="color:#5a5a5a;">⏳ Prüfe Login…</div>
+      <button id="sb-login-btn" style="display:none;background:#036147;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;">🔑 Login</button>
+      <button id="sb-cloud-btn" style="display:none;background:#047a5a;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;">☁ Pläne</button>
+      <button id="sb-save-btn" style="display:none;background:#036147;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;">💾 Speichern</button>
+      <button id="sb-logout-btn" style="display:none;background:transparent;color:#5a5a5a;border:1px solid #D8D4CE;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer;">Logout</button>`;
+    document.body.appendChild(bar);
+    document.getElementById('sb-login-btn').onclick=openLoginModal;
+    document.getElementById('sb-logout-btn').onclick=logout;
+    document.getElementById('sb-save-btn').onclick=quickSave;
+    document.getElementById('sb-cloud-btn').onclick=openPlansModal;
+  }
+  function setStatus(loggedIn,email){
+    const st=document.getElementById('sb-status');
+    document.getElementById('sb-login-btn').style.display=loggedIn?'none':'inline-block';
+    document.getElementById('sb-logout-btn').style.display=loggedIn?'inline-block':'none';
+    document.getElementById('sb-save-btn').style.display=loggedIn?'inline-block':'none';
+    document.getElementById('sb-cloud-btn').style.display=loggedIn?'inline-block':'none';
+    st.innerHTML=loggedIn?`<span style="color:#036147;font-weight:600;">● ${email}</span>`:'<span style="color:#888;">nicht eingeloggt</span>';
+  }
+  function modal(html){
+    const bg=document.createElement('div');
+    bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;font-family:-apple-system,Arial,sans-serif;';
+    const box=document.createElement('div');
+    box.style.cssText='background:white;border-radius:14px;padding:24px;max-width:520px;width:92%;max-height:80vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);';
+    box.innerHTML=html;bg.appendChild(box);
+    bg.onclick=e=>{if(e.target===bg)document.body.removeChild(bg);};
+    document.body.appendChild(bg);
+    return{bg,box,close:()=>document.body.removeChild(bg)};
+  }
+  function openLoginModal(){
+    const m=modal(`<h3 style="color:#036147;margin-bottom:8px;">Anmelden</h3>
+      <p style="font-size:0.85rem;color:#5a5a5a;margin-bottom:14px;">Wir schicken dir einen Magic Link per E-Mail. Kein Passwort nötig.</p>
+      <input id="sb-email" type="email" placeholder="dein@email.de" style="width:100%;padding:10px 14px;border:2px solid #D8D4CE;border-radius:8px;margin-bottom:12px;font-size:0.95rem;">
+      <button id="sb-send-link" style="width:100%;background:#036147;color:white;border:none;padding:11px;border-radius:8px;font-weight:600;cursor:pointer;">Magic Link senden</button>
+      <div id="sb-login-msg" style="margin-top:12px;font-size:0.85rem;"></div>`);
+    m.box.querySelector('#sb-send-link').onclick=async()=>{
+      const email=m.box.querySelector('#sb-email').value.trim();if(!email)return;
+      const msg=m.box.querySelector('#sb-login-msg');msg.textContent='⏳ Sende…';
+      const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:SUPABASE_CONFIG.authRedirectTo}});
+      msg.innerHTML=error?`<span style="color:#C00000;">❌ ${error.message}</span>`:'<span style="color:#036147;">✅ Link gesendet — prüfe deine Inbox.</span>';
+    };
+  }
+  async function logout(){await sb.auth.signOut();currentUser=null;currentPlanId=null;setStatus(false);}
+  async function listPlans(){
+    const{data,error}=await sb.from('business_plans').select('id,name,updated_at,kpis,is_archived').order('updated_at',{ascending:false});
+    if(error){alert('Fehler beim Laden: '+error.message);return[];}
+    return data||[];
+  }
+  async function loadPlan(id){
+    const{data,error}=await sb.from('business_plans').select('*').eq('id',id).single();
+    if(error){alert('Fehler: '+error.message);return;}
+    if(typeof restoreInputs==='function'&&data.data){
+      restoreInputs(data.data);currentPlanId=data.id;
+      if(typeof autoSave==='function')autoSave();
+      alert('✅ Plan „'+data.name+'" geladen.');
+    }
+  }
+  async function savePlan(name,planId){
+    if(!currentUser){alert('Bitte zuerst einloggen.');return;}
+    if(typeof snapshotInputs!=='function'){alert('snapshotInputs() nicht verfügbar.');return;}
+    const data=snapshotInputs();
+    let kpis=null,scoring=null;
+    try{
+      if(typeof collectInputs==='function'&&typeof calcYear==='function'&&typeof calcDemoScore==='function'&&typeof calcFinScore==='function'){
+        const inp=collectInputs();const y1=calcYear(inp,0,1);
+        const totalInv=inp.invCourts+inp.invBau+inp.invIT+inp.invSoft+inp.invWC;
+        const demoSc=calcDemoScore();const finSc=calcFinScore(y1,totalInv);
+        kpis={umsatz_y1:y1.totalRev,ebitda_y1:y1.ebitda,ju_y1:y1.ju,dscr_y1:y1.kapitaldienst>0?y1.ebitda/y1.kapitaldienst:0,gesamtinv:totalInv};
+        scoring={standort:demoSc.total,finanz:finSc.score,gesamt:Math.round(demoSc.total*0.4+finSc.score*0.6)};
+      }
+    }catch(e){console.warn('KPI-Snapshot fehlgeschlagen',e);}
+    const payload={user_id:currentUser.id,name,data,kpis,scoring};
+    if(planId){
+      const{error}=await sb.from('business_plans').update(payload).eq('id',planId);
+      if(error)return alert('Speichern fehlgeschlagen: '+error.message);
+      currentPlanId=planId;
+    }else{
+      const{data:row,error}=await sb.from('business_plans').insert(payload).select().single();
+      if(error)return alert('Speichern fehlgeschlagen: '+error.message);
+      currentPlanId=row.id;
+    }
+    try{
+      const{data:vCount}=await sb.from('business_plan_versions').select('version_number').eq('plan_id',currentPlanId).order('version_number',{ascending:false}).limit(1);
+      const next=(vCount&&vCount[0]?vCount[0].version_number:0)+1;
+      await sb.from('business_plan_versions').insert({plan_id:currentPlanId,user_id:currentUser.id,version_number:next,data});
+    }catch(e){console.warn('Version snapshot failed',e);}
+    return currentPlanId;
+  }
+  async function deletePlan(id){
+    if(!confirm('Plan unwiderruflich löschen?'))return;
+    const{error}=await sb.from('business_plans').delete().eq('id',id);
+    if(error)return alert('Löschen fehlgeschlagen: '+error.message);
+  }
+  async function quickSave(){
+    const name=prompt('Name dieses Plans:',document.getElementById('proj_name')?.value||'Padel Plan');
+    if(!name)return;
+    const id=await savePlan(name,currentPlanId);
+    if(id){
+      const t=document.createElement('div');
+      t.textContent='☁ Cloud-Save erfolgreich';
+      t.style.cssText='position:fixed;bottom:18px;right:18px;background:#036147;color:white;padding:10px 18px;border-radius:8px;font-size:0.85rem;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:9999;';
+      document.body.appendChild(t);setTimeout(()=>document.body.removeChild(t),1800);
+    }
+  }
+  async function openPlansModal(){
+    const m=modal('<h3 style="color:#036147;margin-bottom:14px;">☁ Deine Pläne</h3><div id="sb-plans-list">⏳ Lade…</div>');
+    const list=await listPlans();
+    if(list.length===0){m.box.querySelector('#sb-plans-list').innerHTML='<p style="color:#888;">Keine gespeicherten Pläne. Klicke „💾 Speichern" um den ersten anzulegen.</p>';return;}
+    m.box.querySelector('#sb-plans-list').innerHTML=list.map(p=>{
+      const dat=new Date(p.updated_at).toLocaleString('de-DE');
+      const kpi=p.kpis?` · Umsatz J1: ${(p.kpis.umsatz_y1/1000).toFixed(0)}k · DSCR: ${(p.kpis.dscr_y1||0).toFixed(2)}×`:'';
+      return `<div style="border:1px solid #D8D4CE;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;"><div style="font-weight:600;color:#036147;">${escapeHtml(p.name)}</div>
+        <div style="font-size:0.78rem;color:#888;">${dat}${kpi}</div></div>
+        <button data-load="${p.id}" style="background:#036147;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;">Laden</button>
+        <button data-del="${p.id}" style="background:transparent;color:#C00000;border:1px solid #C00000;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer;">🗑</button>
+      </div>`;
+    }).join('');
+    m.box.querySelectorAll('[data-load]').forEach(b=>b.onclick=async()=>{await loadPlan(b.dataset.load);m.close();});
+    m.box.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{await deletePlan(b.dataset.del);m.close();openPlansModal();});
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  async function init(){
+    injectAuthUI();
+    const{data}=await sb.auth.getSession();
+    currentUser=data?.session?.user||null;
+    setStatus(!!currentUser,currentUser?.email||'');
+    sb.auth.onAuthStateChange((_e,session)=>{
+      currentUser=session?.user||null;
+      setStatus(!!currentUser,currentUser?.email||'');
+    });
+  }
+  window.SupabasePadel={sb,listPlans,loadPlan,savePlan,deletePlan,getCurrentUser:()=>currentUser,getCurrentPlanId:()=>currentPlanId};
+})();
+</script>
+
 </body>
 </html>
