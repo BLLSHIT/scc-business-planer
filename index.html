@@ -16,10 +16,14 @@
      ==================================================================== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL      = "https://vnlwyapkwnsvyewdpahh.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZubHd5YXBrd25zdnlld2RwYWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODg3NDUsImV4cCI6MjA5Mzc2NDc0NX0.RXuUrxubrUEk4ey408uOdqDGYGELkLk2LtC3NlwB5aA";
+  const SUPABASE_URL      = "PLATZHALTER_URL";
+  const SUPABASE_ANON_KEY = "PLATZHALTER_KEY";
+  // Wenn true: ohne Login ist die App komplett verborgen (Login-Wall).
+  // Wenn false: App nutzbar ohne Login, Cloud-Speicher nur nach Login.
+  const REQUIRE_LOGIN = true;
   // Wenn die Werte noch Platzhalter sind, läuft der Planer ohne Auth weiter (Demo-Modus).
   window._sccAuthEnabled = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 40;
+  window._sccRequireLogin = REQUIRE_LOGIN && window._sccAuthEnabled;
   if (window._sccAuthEnabled) {
     window._supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -135,9 +139,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .inv-table tr:nth-child(even) td{background:var(--gray);}
 .inv-table input{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.88rem;background:var(--sky);}
 .scoring-card{border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border);}
+/* AUTH-GATE: App wird verborgen bis Login erfolgreich */
+body.scc-locked .hero,body.scc-locked .progress-wrap,body.scc-locked .container,body.scc-locked #sb-bar{display:none!important;}
+.scc-gate{position:fixed;inset:0;background:linear-gradient(160deg,#024d38 0%,#036147 50%,#047a5a 100%);display:none;align-items:center;justify-content:center;z-index:9997;padding:20px;}
+body.scc-locked .scc-gate{display:flex;}
+.scc-gate-card{background:white;border-radius:16px;padding:36px 32px;max-width:440px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.25);}
+.scc-gate-card h1{font-size:1.4rem;color:#036147;margin-bottom:6px;}
+.scc-gate-card p{font-size:0.92rem;color:#5a5a5a;margin-bottom:20px;}
+.scc-gate-card input{width:100%;padding:12px 14px;border:2px solid #D8D4CE;border-radius:8px;font-size:0.98rem;margin-bottom:14px;outline:none;}
+.scc-gate-card input:focus{border-color:#036147;}
+.scc-gate-card button{width:100%;background:#036147;color:white;border:none;padding:13px;border-radius:8px;font-weight:700;font-size:0.98rem;cursor:pointer;letter-spacing:0.3px;}
+.scc-gate-card button:hover{background:#024d38;}
+.scc-gate-card button:disabled{background:#888;cursor:not-allowed;}
+.scc-gate-msg{margin-top:14px;font-size:0.86rem;min-height:18px;}
+.scc-gate-msg.ok{color:#036147;}
+.scc-gate-msg.err{color:#C00000;}
+.scc-gate-foot{margin-top:18px;padding-top:14px;border-top:1px solid #eee;font-size:0.78rem;color:#888;text-align:center;}
 </style>
 </head>
 <body>
+<!-- AUTH-GATE: blockiert App-Zugriff bis Login wenn REQUIRE_LOGIN aktiv -->
+<script>if(window._sccRequireLogin)document.body.classList.add('scc-locked');</script>
+<div class="scc-gate" id="scc-gate">
+  <div class="scc-gate-card">
+    <h1>🔒 Padel Business Plan Matrix</h1>
+    <p>Dieses Tool ist zugangsbeschränkt. Bitte melde dich mit deiner E-Mail an — wir senden dir einen Magic Link.</p>
+    <input type="email" id="scc-gate-email" placeholder="dein@email.de" autocomplete="email">
+    <button id="scc-gate-btn" type="button">Magic Link senden</button>
+    <div class="scc-gate-msg" id="scc-gate-msg"></div>
+    <div class="scc-gate-foot">SCC Courts · AFP Courts</div>
+  </div>
+</div>
 <div class="hero">
   <!-- SCC Courts Logo SVG -->
   <div style="margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:0;">
@@ -1877,15 +1909,42 @@ try{const raw=localStorage.getItem(LS_KEY);if(raw){const st=JSON.parse(raw);(st.
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+  // AUTH-GATE Handler
+  function applyGate(loggedIn){
+    if(!window._sccRequireLogin)return;
+    if(loggedIn){document.body.classList.remove('scc-locked');}
+    else{document.body.classList.add('scc-locked');}
+  }
+  function setupGate(){
+    const btn=document.getElementById('scc-gate-btn');
+    const inp=document.getElementById('scc-gate-email');
+    const msg=document.getElementById('scc-gate-msg');
+    if(!btn||!inp)return;
+    const submit=async()=>{
+      const email=(inp.value||'').trim();
+      if(!email){msg.className='scc-gate-msg err';msg.textContent='Bitte E-Mail eingeben.';return;}
+      btn.disabled=true;msg.className='scc-gate-msg';msg.textContent='⏳ Sende Magic Link…';
+      const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:window._sccAuthRedirect}});
+      btn.disabled=false;
+      if(error){msg.className='scc-gate-msg err';msg.textContent='❌ '+error.message;}
+      else{msg.className='scc-gate-msg ok';msg.textContent='✅ Link gesendet — prüfe deine Inbox.';}
+    };
+    btn.onclick=submit;
+    inp.onkeydown=e=>{if(e.key==='Enter')submit();};
+  }
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   async function init(){
+    setupGate();
     injectAuthUI();
     const{data}=await sb.auth.getSession();
     currentUser=data?.session?.user||null;
     setStatus(!!currentUser,currentUser?.email||'');
+    applyGate(!!currentUser);
     sb.auth.onAuthStateChange((_e,session)=>{
       currentUser=session?.user||null;
       setStatus(!!currentUser,currentUser?.email||'');
+      applyGate(!!currentUser);
     });
   }
   window.SupabasePadel={sb,listPlans,loadPlan,savePlan,deletePlan,getCurrentUser:()=>currentUser,getCurrentPlanId:()=>currentPlanId};

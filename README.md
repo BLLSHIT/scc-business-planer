@@ -14,20 +14,29 @@ Interaktiver Business-Plan-Generator für Padel-Anlagen — von der Idee bis zum
 2. Im **SQL-Editor** den Inhalt von `supabase/schema.sql` einfügen → **Run**.
 3. **Project Settings → API** → notiere `Project URL` und `anon public` Key.
 4. **Authentication → Providers → Email** aktivieren (Magic Link reicht).
+5. **Authentication → Settings → User Signups** → **Disable signups** aktivieren.
+   ⚠️ Wichtig — sonst kann sich jeder mit beliebiger E-Mail registrieren.
+6. **Authentication → Users → Add user** → für jeden, der Zugriff bekommen soll, manuell anlegen.
 
 ### 2. URL und Key in `index.html` eintragen
 
-Öffne `index.html` und finde ganz oben (ca. Zeile 25) den Block:
+Öffne `index.html` und finde oben (ca. Zeile 19–20) den Block:
 
 ```js
-window.SUPABASE_CONFIG = {
-  url:     '',  // ← hier eintragen, z.B. 'https://abcdefgh.supabase.co'
-  anonKey: '',  // ← hier eintragen, der lange "anon public" JWT-String
-  ...
-};
+const SUPABASE_URL      = "PLATZHALTER_URL";
+const SUPABASE_ANON_KEY = "PLATZHALTER_KEY";
 ```
 
-Beide Strings ausfüllen. Datei speichern. **Fertig.**
+Ersetze die beiden Platzhalter mit deinen Werten:
+
+```js
+const SUPABASE_URL      = "https://xyz123.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6...";
+```
+
+Datei speichern. **Fertig.**
+
+> Solange `SUPABASE_URL` nicht mit `https://` beginnt oder der Key kürzer als 40 Zeichen ist, läuft die App im **Demo-Modus** (LocalStorage only) ohne Login-Box.
 
 ### 3. Zu GitHub pushen + Pages aktivieren
 
@@ -47,15 +56,38 @@ Nach 1–2 Minuten ist die App live unter `https://<dein-user>.github.io/padel-b
 
 ---
 
+## Zugriffsschutz
+
+Die App nutzt einen **Auth-Gate**: ohne Login wird der gesamte Generator verborgen, der User sieht nur einen Login-Screen.
+
+Das wird durch drei Schichten gesichert:
+
+| Schicht | Was es schützt | Wie aktivieren |
+|---|---|---|
+| **Auth-Gate (Frontend)** | Versteckt die UI vor nicht eingeloggten Usern | `REQUIRE_LOGIN = true` in `index.html` (default) |
+| **Sign-up-Sperre** | Verhindert, dass sich neue User selbst registrieren | Supabase → Authentication → Settings → Disable signups |
+| **Allowlist-Tabelle (optional)** | Erlaubt nur explizit freigegebene E-Mails | `allowed_emails`-Tabelle in `schema.sql` + strikte RLS-Policies |
+
+**Wichtig:** Frontend-Auth-Gate allein reicht nicht — wer den Quellcode liest, kann das `scc-locked`-CSS umgehen. Erst die Sign-up-Sperre (oder Allowlist) auf Supabase-Seite macht das Tool wirklich zugangsbeschränkt, weil ohne gültigen User-Account auch keine Daten gelesen/geschrieben werden können (RLS blockt jeden anonymen Zugriff).
+
+### REQUIRE_LOGIN umstellen
+
+In `index.html`, Zeile ~22:
+
+```js
+const REQUIRE_LOGIN = true;   // Auth-Gate aktiv (App-UI verborgen ohne Login)
+const REQUIRE_LOGIN = false;  // App ohne Login nutzbar, Cloud-Speicher nur nach Login
+```
+
 ## Was passiert ohne Supabase-Konfig?
 
-Wenn `url` und `anonKey` leer bleiben, läuft die App im **LocalStorage-only-Modus**:
+Wenn `SUPABASE_URL` und `SUPABASE_ANON_KEY` Platzhalter bleiben, läuft die App im **Demo-Modus**:
 - Eingaben werden lokal im Browser gespeichert (Autosave)
 - JSON-Export/Import funktioniert
-- Keine Login-Box oben rechts
+- Keine Login-Box oben rechts, kein Auth-Gate
 - Keine Cloud-Speicherung, keine Multi-Plan-Verwaltung
 
-Das ist ein gültiger Setup, falls du den Generator allein nutzen willst.
+Das ist ein gültiger Setup, falls du den Generator allein nutzen und nicht öffentlich deployen willst.
 
 ---
 
