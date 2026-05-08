@@ -8,27 +8,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- ====================================================================
+     SUPABASE-AUTH-KONFIGURATION
+     Trage hier deine zwei Werte aus dem Supabase-Dashboard ein:
+     1) SUPABASE_URL  — z.B. "https://xyz123.supabase.co"
+     2) SUPABASE_ANON_KEY — der lange "anon public"-Key
+     ==================================================================== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- ════════════════════════════════════════════════════════════════════
-     SUPABASE-KONFIGURATION
-     ════════════════════════════════════════════════════════════════════
-     1. Auf https://supabase.com ein Projekt anlegen (Region EU empfohlen)
-     2. Im SQL-Editor `supabase/schema.sql` ausführen
-     3. Project Settings → API: URL und "anon public" Key kopieren
-     4. Unten die beiden Strings ersetzen — fertig.
-
-     Wenn du die App ohne Cloud-Speicher laufen lassen willst, einfach
-     die Werte auf '' lassen — die App speichert dann nur lokal (LocalStorage).
-     ════════════════════════════════════════════════════════════════════ -->
 <script>
-window.SUPABASE_CONFIG = {
-  url:     'https://vnlwyapkwnsvyewdpahh.supabase.co',  // ← hier eintragen, z.B. 'https://abcdefgh.supabase.co'
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZubHd5YXBrd25zdnlld2RwYWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODg3NDUsImV4cCI6MjA5Mzc2NDc0NX0.RXuUrxubrUEk4ey408uOdqDGYGELkLk2LtC3NlwB5aA',  // ← hier eintragen, der lange "anon public" JWT-String
-
-  appName: 'Padel Business Plan Matrix',
-  authRedirectTo: window.location.origin + window.location.pathname
-};
+  const SUPABASE_URL      = "PLATZHALTER_URL";
+  const SUPABASE_ANON_KEY = "PLATZHALTER_KEY";
+  // Wenn die Werte noch Platzhalter sind, läuft der Planer ohne Auth weiter (Demo-Modus).
+  window._sccAuthEnabled = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 40;
+  if (window._sccAuthEnabled) {
+    window._supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+  }
+  // Pfad-aware Redirect-Ziel für Magic-Link
+  window._sccAuthRedirect = window.location.origin + window.location.pathname;
 </script>
 
 <style>
@@ -1743,16 +1741,12 @@ try{const raw=localStorage.getItem(LS_KEY);if(raw){const st=JSON.parse(raw);(st.
      ════════════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
-  if(!window.SUPABASE_CONFIG||!window.SUPABASE_CONFIG.url||!window.SUPABASE_CONFIG.anonKey){
-    console.info('[Padel BP] Supabase nicht konfiguriert — laufe nur lokal (LocalStorage).');
+  if(!window._sccAuthEnabled||!window._supa){
+    console.info('[Padel BP] Supabase nicht konfiguriert — Demo-Modus (LocalStorage).');
     return;
   }
-  if(typeof supabase==='undefined'||!supabase.createClient){
-    console.warn('[Padel BP] Supabase-JS-SDK nicht geladen.');
-    return;
-  }
-  const sb=supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  window.sb=sb;
+  const sb=window._supa;
+  window.sb=sb; // alias für Debug
   let currentUser=null,currentPlanId=null;
 
   function injectAuthUI(){
@@ -1798,7 +1792,7 @@ try{const raw=localStorage.getItem(LS_KEY);if(raw){const st=JSON.parse(raw);(st.
     m.box.querySelector('#sb-send-link').onclick=async()=>{
       const email=m.box.querySelector('#sb-email').value.trim();if(!email)return;
       const msg=m.box.querySelector('#sb-login-msg');msg.textContent='⏳ Sende…';
-      const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:SUPABASE_CONFIG.authRedirectTo}});
+      const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:window._sccAuthRedirect}});
       msg.innerHTML=error?`<span style="color:#C00000;">❌ ${error.message}</span>`:'<span style="color:#036147;">✅ Link gesendet — prüfe deine Inbox.</span>';
     };
   }
