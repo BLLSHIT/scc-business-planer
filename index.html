@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎾 Padel Business Plan Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--navy:#036147;--blue:#047a5a;--lightblue:#a8d5c4;--sky:#f6f3ee;--green:#036147;--lightgreen:#d4ede7;--yellow:#c8e6d9;--gray:#F5F2ED;--border:#D8D4CE;--text:#1a1a1a;--muted:#5a5a5a;--white:#FFFFFF;--red:#C00000;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#ece9e3;color:var(--text);min-height:100vh;}
+.hero{background:linear-gradient(160deg,#024d38 0%,#036147 50%,#047a5a 100%);color:white;padding:52px 40px 44px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.hero-badge{display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:5px 16px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px;}
+.hero h1{font-size:2.4rem;font-weight:700;margin-bottom:10px;letter-spacing:-0.5px;}
+.hero p{font-size:1.05rem;opacity:0.85;max-width:560px;margin:0 auto;}
+.progress-wrap{background:#f6f3ee;border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:100;}
+.progress-inner{max-width:1000px;margin:0 auto;display:flex;align-items:stretch;}
+.step-tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 2px 10px;font-size:10px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;gap:4px;}
+.step-tab .step-num{width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;transition:all .2s;}
+.step-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.step-tab.active .step-num{background:var(--navy);color:white;}
+.step-tab.done .step-num{background:var(--green);color:white;}
+.step-tab.done{color:var(--green);}
+.step-label{display:none;}
+@media(min-width:700px){.step-label{display:block;}}
+.container{max-width:1000px;margin:0 auto;padding:32px 20px 80px;}
+.card{background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;margin-bottom:24px;}
+.card-header{background:var(--navy);color:white;padding:18px 24px;display:flex;align-items:center;gap:12px;}
+.card-header h2{font-size:1.1rem;font-weight:600;}
+.card-header .icon{font-size:1.3rem;}
+.card-body{padding:24px;}
+.card-sub{background:var(--blue);color:white;padding:10px 24px;font-size:0.82rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group label{font-size:0.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;}
+.form-group input,.form-group select{border:2px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.95rem;transition:border-color .2s;outline:none;background:var(--sky);color:var(--text);}
+.form-group input:focus,.form-group select:focus{border-color:var(--navy);background:white;}
+.form-group input.key{background:#e8f5f0;border-color:#036147;}
+.hint{font-size:0.75rem;color:var(--muted);}
+.util-wrap{overflow-x:auto;}
+.util-table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:820px;}
+.util-table th{background:var(--navy);color:white;padding:8px 6px;text-align:center;font-weight:600;font-size:0.78rem;}
+.util-table th:first-child{text-align:left;padding-left:14px;min-width:160px;}
+.util-table td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:center;}
+.util-table td:first-child{text-align:left;padding-left:14px;font-weight:600;font-size:0.82rem;color:var(--navy);background:var(--sky);}
+.util-table tr:nth-child(even) td{background:var(--gray);}
+.util-table tr:nth-child(even) td:first-child{background:#E8EFF7;}
+.util-input{width:56px;border:1px solid var(--border);border-radius:6px;padding:5px 4px;text-align:center;font-size:0.82rem;background:var(--sky);}
+.util-input:focus{border-color:var(--blue);outline:none;background:white;}
+.pers-table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+.pers-table th{background:var(--blue);color:white;padding:10px 12px;text-align:left;font-weight:600;font-size:0.8rem;}
+.pers-table td{padding:8px 12px;border-bottom:1px solid var(--border);}
+.pers-table tr:nth-child(even) td{background:var(--gray);}
+.pers-table input{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.88rem;background:var(--sky);}
+.pers-table input:focus{border-color:var(--blue);outline:none;background:white;}
+.pers-table .total-row td{background:#D9D9D9;font-weight:700;}
+.fin-table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+.fin-table th{background:var(--navy);color:white;padding:10px 14px;text-align:left;font-weight:600;font-size:0.8rem;}
+.fin-table td{padding:9px 14px;border-bottom:1px solid var(--border);}
+.fin-table tr:nth-child(even) td{background:var(--gray);}
+.fin-table input{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.88rem;background:var(--sky);}
+.fin-table input:focus{border-color:var(--blue);outline:none;background:white;}
+.fin-table .calc-cell{font-weight:700;color:var(--navy);background:var(--lightblue)!important;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;}
+.kpi-card{background:var(--sky);border-radius:10px;padding:18px;text-align:center;border:1px solid var(--lightblue);}
+.kpi-card.green{background:var(--lightgreen);border-color:#9DC779;}
+.kpi-card.navy{background:var(--navy);border-color:var(--navy);}
+.kpi-card.navy .kpi-label{color:rgba(255,255,255,0.75);}
+.kpi-card.navy .kpi-value{color:white;}
+.kpi-label{font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
+.kpi-value{font-size:1.5rem;font-weight:700;color:var(--navy);}
+.kpi-unit{font-size:0.75rem;color:var(--muted);margin-top:3px;}
+.btn-row{display:flex;justify-content:space-between;align-items:center;padding:20px 0 0;gap:12px;}
+.btn{padding:12px 28px;border-radius:8px;font-size:0.95rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.btn-secondary{background:var(--gray);border:2px solid var(--border);color:var(--text);}
+.btn-secondary:hover{background:var(--border);}
+.btn-primary{background:var(--navy);color:white;}
+.btn-primary:hover{background:#024d38;transform:translateY(-1px);box-shadow:0 4px 12px rgba(3,97,71,0.35);}
+.btn-success{background:var(--green);color:white;font-size:1.05rem;padding:14px 32px;}
+.btn-success:hover{background:#5D9A3A;transform:translateY(-1px);box-shadow:0 4px 16px rgba(112,173,71,0.4);}
+.btn-success:disabled{background:#aaa;cursor:not-allowed;transform:none;box-shadow:none;}
+.step-content{display:none;}
+.step-content.active{display:block;}
+.scen-table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+.scen-table th{padding:10px 14px;text-align:right;font-weight:600;font-size:0.8rem;}
+.scen-table th:first-child{text-align:left;}
+.scen-table td{padding:9px 14px;border-bottom:1px solid var(--border);text-align:right;}
+.scen-table td:first-child{text-align:left;font-weight:500;}
+.scen-table .total-row td{font-weight:700;background:#D9D9D9;}
+.scen-table .pos{color:#2E7D32;}.scen-table .neg{color:var(--red);}
+.year-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.year-table th{background:var(--navy);color:white;padding:8px 10px;text-align:right;font-size:0.78rem;}
+.year-table th:first-child{text-align:left;min-width:160px;}
+.year-table td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;}
+.year-table td:first-child{text-align:left;font-weight:500;}
+.year-table .total-row td{background:#D9D9D9;font-weight:700;}
+.year-table .result-row td{background:var(--lightgreen);font-weight:700;color:#2E7D32;}
+.section-title{font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin:20px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.info{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--lightblue);color:var(--navy);font-size:10px;font-weight:700;text-align:center;line-height:16px;cursor:help;margin-left:4px;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.downloading{animation:pulse 0.6s ease-in-out;}
+.score-bar-wrap{background:#E0E0E0;border-radius:8px;height:10px;overflow:hidden;margin:3px 0;}
+.score-bar{height:100%;border-radius:8px;transition:width .5s ease;}
+.demo-score-box{background:var(--sky);border:1px solid var(--lightblue);border-radius:12px;padding:16px 20px;margin-top:16px;}
+.inv-table{width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:12px;}
+.inv-table th{background:var(--blue);color:white;padding:9px 12px;text-align:left;font-size:0.8rem;}
+.inv-table td{padding:8px 12px;border-bottom:1px solid var(--border);}
+.inv-table tr:nth-child(even) td{background:var(--gray);}
+.inv-table input{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.88rem;background:var(--sky);}
+.scoring-card{border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="hero">
+  <!-- SCC Courts Logo SVG -->
+  <div style="margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:0;">
+    <svg width="340" height="56" viewBox="0 0 340 56" xmlns="http://www.w3.org/2000/svg">
+      <!-- SCC left block -->
+      <text x="0" y="44" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="50" fill="white" letter-spacing="-2">SCC</text>
+      <text x="130" y="28" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="white" letter-spacing="2">COURTS</text>
+      <text x="0" y="56" font-family="Arial,sans-serif" font-weight="400" font-size="11" fill="rgba(255,255,255,0.75)" letter-spacing="1.5">SPORTS CULTURE – CLUB</text>
+      <!-- Divider -->
+      <line x1="222" y1="4" x2="222" y2="54" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <!-- AFP right block -->
+      <text x="232" y="36" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="36" fill="white" letter-spacing="-1">AFP</text>
+      <rect x="295" y="10" width="44" height="22" fill="white"/>
+      <text x="317" y="26" font-family="Arial,sans-serif" font-weight="700" font-size="12" fill="#036147" text-anchor="middle" letter-spacing="1">COURTS</text>
+      <text x="232" y="52" font-family="Arial,sans-serif" font-weight="400" font-size="9" fill="rgba(255,255,255,0.75)" letter-spacing="2">OFFIZIELLER DISTRIBUTOR</text>
+    </svg>
+  </div>
+  <div class="hero-badge">Business Plan Tool</div>
+  <h1>Padel Business Plan Matrix</h1>
+  <p>Professionelle Rentabilitätsrechnung für Padel-Anlagen — von der Idee bis zum Investorengespräch</p>
+</div>
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="step-tab active" onclick="goTo(1)" id="tab1"><div class="step-num">1</div><div class="step-label">Projekt</div></div>
+    <div class="step-tab" onclick="goTo(2)" id="tab2"><div class="step-num">2</div><div class="step-label">Standort</div></div>
+    <div class="step-tab" onclick="goTo(3)" id="tab3"><div class="step-num">3</div><div class="step-label">Courts</div></div>
+    <div class="step-tab" onclick="goTo(4)" id="tab4"><div class="step-num">4</div><div class="step-label">Auslastung</div></div>
+    <div class="step-tab" onclick="goTo(5)" id="tab5"><div class="step-num">5</div><div class="step-label">Umsätze</div></div>
+    <div class="step-tab" onclick="goTo(6)" id="tab6"><div class="step-num">6</div><div class="step-label">Kosten</div></div>
+    <div class="step-tab" onclick="goTo(7)" id="tab7"><div class="step-num">7</div><div class="step-label">Finanzierung</div></div>
+    <div class="step-tab" onclick="goTo(8)" id="tab8"><div class="step-num">8</div><div class="step-label">Generieren</div></div>
+  </div>
+</div>
+<div class="container">
+
+<!-- STEP 1 -->
+<div class="step-content active" id="step1">
+  <div class="card">
+    <div class="card-header"><span class="icon">📋</span><h2>Projektübersicht & Grunddaten</h2></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Projektname / Standort <span class="info" title="Wird als Dateiname verwendet">i</span></label>
+          <input type="text" id="proj_name" value="Meine Padel Anlage" class="key" placeholder="z.B. Padel Arena München">
+        </div>
+        <div class="form-group"><label>Startjahr</label><input type="number" id="start_year" value="2025" min="2024" max="2035"></div>
+        <div class="form-group"><label>Planungszeitraum (Jahre)</label><input type="number" id="plan_years" value="10" min="3" max="15" class="key"></div>
+        <div class="form-group"><label>MwSt-Satz (%)</label><input type="number" id="mwst" value="19" min="0" max="30" step="0.1"></div>
+        <div class="form-group">
+          <label>Eingabeart Court-Preise</label>
+          <select id="price_mode">
+            <option value="netto" selected>Netto (vor MwSt)</option>
+            <option value="brutto">Brutto (inkl. MwSt)</option>
+          </select>
+          <span class="hint">Bei Brutto wird intern auf Netto normalisiert</span>
+        </div>
+        <div class="form-group"><label>Preisanpassung p.a. (%)</label><input type="number" id="price_adj" value="3" min="0" max="10" step="0.5"><span class="hint">Jährliche Preissteigerung</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row" style="flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" type="button" onclick="exportJSON()" title="Aktuellen Stand als JSON-Datei sichern">💾 JSON Export</button>
+      <button class="btn btn-secondary" type="button" onclick="document.getElementById('json-import-input').click()" title="JSON-Datei laden">📂 JSON Import</button>
+      <input type="file" id="json-import-input" accept=".json,application/json" style="display:none;" onchange="if(this.files[0])importJSON(this.files[0]);this.value='';">
+      <button class="btn btn-secondary" type="button" onclick="resetAll()" style="color:#C00000;border-color:#C00000;" title="Alle Eingaben zurücksetzen">↺ Reset</button>
+    </div>
+    <button class="btn btn-primary" onclick="goTo(2)">Weiter: Standort & Demografie →</button>
+  </div>
+</div>
+
+<!-- STEP 2: DEMOGRAFIE -->
+<div class="step-content" id="step2">
+  <div class="card">
+    <div class="card-header"><span class="icon">📍</span><h2>Standort & Demografische Analyse</h2></div>
+    <div class="card-body">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;">Bewertung des Standortpotenzials anhand demografischer und infrastruktureller Faktoren. Der Standort-Score (0–100) fließt in das Gesamtscoring ein.</p>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Stadt / Gemeinde</label><input type="text" id="demo_stadt" value="" placeholder="z.B. München"></div>
+        <div class="form-group">
+          <label>Einwohnerzahl Einzugsgebiet</label>
+          <input type="number" id="demo_population" value="200000" min="0" step="10000" class="key" oninput="updateDemoScore()">
+          <span class="hint">Radius ca. 15–20 km</span>
+        </div>
+        <div class="form-group">
+          <label>Durchschnittseinkommen</label>
+          <select id="demo_income" onchange="updateDemoScore()">
+            <option value="niedrig">Niedrig (&lt;25.000 €/Jahr)</option>
+            <option value="mittel" selected>Mittel (25–45 T€)</option>
+            <option value="hoch">Hoch (45–65 T€)</option>
+            <option value="sehr_hoch">Sehr hoch (&gt;65.000 €)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sportaffinität Region (1–10)</label>
+          <input type="number" id="demo_sport" value="7" min="1" max="10" class="key" oninput="updateDemoScore()">
+          <span class="hint">10 = sehr sportaffin</span>
+        </div>
+        <div class="form-group">
+          <label>Direkte Padel-Konkurrenz <span class="info" title="Umkreis 5–8 km">i</span></label>
+          <select id="demo_competitors" onchange="updateDemoScore()">
+            <option value="0">0 – Keine (5–8 km Umkreis)</option>
+            <option value="1" selected>1 Anlage</option>
+            <option value="2">2 Anlagen</option>
+            <option value="3">3 Anlagen</option>
+            <option value="4">4 Anlagen</option>
+            <option value="5">5+ – Starker Wettbewerb</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ÖPNV-Anbindung</label>
+          <select id="demo_transit" onchange="updateDemoScore()">
+            <option value="sehr_gut">Sehr gut (S/U-Bahn direkt)</option>
+            <option value="gut" selected>Gut (Bus/Tram in Nähe)</option>
+            <option value="mittel">Mittel (Bus vorhanden)</option>
+            <option value="schlecht">Schlecht (kaum ÖPNV)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Auto-Anbindung</label>
+          <select id="demo_auto" onchange="updateDemoScore()">
+            <option value="sehr_gut">Sehr gut (Autobahn/Schnellstr.)</option>
+            <option value="gut" selected>Gut (Bundesstraße)</option>
+            <option value="mittel">Mittel (Landstraße)</option>
+            <option value="schlecht">Schlecht (schlechte Zufahrt)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Parkplätze – Anlage (Anzahl)</label>
+          <input type="number" id="demo_park_anlage" value="30" min="0" step="5" oninput="updateDemoScore()">
+          <span class="hint">Eigene Stellplätze auf dem Gelände</span>
+        </div>
+        <div class="form-group">
+          <label>Öffentl. Parkplätze / Parkhaus (Anzahl)</label>
+          <input type="number" id="demo_park_oeffentl" value="20" min="0" step="5" oninput="updateDemoScore()">
+          <span class="hint">Erreichbar in &lt;5 Min. Fußweg</span>
+        </div>
+      </div>
+      <div class="demo-score-box" style="margin-top:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <strong style="color:var(--navy);">📊 Standort-Score (Live)</strong>
+          <div><span style="font-size:2rem;font-weight:800;color:var(--navy);" id="demo-score-num">–</span><span style="color:var(--muted);margin-left:4px;">/100</span></div>
+        </div>
+        <div id="demo-score-bars"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(1)">← Zurück</button>
+    <button class="btn btn-primary" onclick="goTo(3)">Weiter: Courts & Preise →</button>
+  </div>
+</div>
+
+<!-- STEP 3: COURTS -->
+<div class="step-content" id="step3">
+  <div class="card">
+    <div class="card-header"><span class="icon">🏟️</span><h2>Courts & Preisstruktur</h2></div>
+    <div class="card-body">
+      <div class="section-title">Öffnungszeiten</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Öffnungszeiten täglich (h)</label><input type="number" id="open_hours" value="17" min="8" max="24"><span class="hint">z.B. 07:00–00:00 = 17 h</span></div>
+        <div class="form-group"><label>High-Time täglich (h)</label><input type="number" id="ht_hours" value="6" min="1" max="12"><span class="hint">z.B. 17:00–23:00 = 6 h</span></div>
+      </div>
+
+      <div class="section-title">Courts & Preise Netto (€/Stunde)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <!-- DC Spalte -->
+        <div style="background:var(--sky);border-radius:10px;padding:16px;border:1px solid var(--border);">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="background:var(--navy);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;">DC</span> Double Courts</div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Anzahl DC 🟡</label>
+            <input type="number" id="dc_courts" value="5" min="0" max="20" class="key">
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>DC High-Time (€/h) 🟡</label>
+            <input type="number" id="dc_ht_price" value="33.61" min="0" step="0.01" class="key">
+            <span class="hint">Preis netto in der Stoßzeit</span>
+          </div>
+          <div class="form-group">
+            <label>DC Low-Time (€/h) 🟡</label>
+            <input type="number" id="dc_lt_price" value="20.17" min="0" step="0.01" class="key">
+            <span class="hint">Preis netto außerhalb Stoßzeit</span>
+          </div>
+        </div>
+        <!-- SC Spalte -->
+        <div style="background:var(--sky);border-radius:10px;padding:16px;border:1px solid var(--border);">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="background:var(--lightblue);color:var(--navy);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;">SC</span> Single Courts</div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Anzahl SC 🟡</label>
+            <input type="number" id="sc_courts" value="2" min="0" max="20" class="key">
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>SC High-Time (€/h) 🟡</label>
+            <input type="number" id="sc_ht_price" value="21.01" min="0" step="0.01" class="key">
+            <span class="hint">Preis netto in der Stoßzeit</span>
+          </div>
+          <div class="form-group">
+            <label>SC Low-Time (€/h) 🟡</label>
+            <input type="number" id="sc_lt_price" value="13.45" min="0" step="0.01" class="key">
+            <span class="hint">Preis netto außerhalb Stoßzeit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(2)">← Zurück</button>
+    <button class="btn btn-primary" onclick="goTo(4)">Weiter: Auslastung →</button>
+  </div>
+</div>
+
+<!-- STEP 4: AUSLASTUNG -->
+<div class="step-content" id="step4">
+  <div class="card">
+    <div class="card-header"><span class="icon">📈</span><h2>Auslastungsannahmen Base Case</h2></div>
+    <div class="card-body">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">% der verfügbaren Stunden pro Monat. Best (+15%) / Worst Case (-20%) werden automatisch berechnet.</p>
+      <div class="util-wrap">
+        <table class="util-table">
+          <thead><tr><th>Kategorie</th><th>Jan</th><th>Feb</th><th>Mär</th><th>Apr</th><th>Mai</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Dez</th></tr></thead>
+          <tbody id="util-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(3)">← Zurück</button>
+    <button class="btn btn-primary" onclick="goTo(5)">Weiter: Weitere Umsätze →</button>
+  </div>
+</div>
+
+<!-- STEP 5: UMSÄTZE -->
+<div class="step-content" id="step5">
+  <div class="card">
+    <div class="card-header"><span class="icon">💰</span><h2>Weitere Umsätze</h2></div>
+    <div class="card-body">
+      <div class="card-sub" style="margin:-24px -24px 20px;border-radius:0;">Bar / Gastronomie</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Marge/Getränk netto (€)</label><input type="number" id="bar_marge" value="2.00" step="0.1"></div>
+        <div class="form-group"><label>Getränke/Tag (Base)</label><input type="number" id="bar_qty" value="35" min="0"></div>
+      </div>
+      <div class="section-title">Shop / Equipment</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Racket-Verleih Marge/Buchung (€)</label><input type="number" id="rv_marge" value="3.36" step="0.1"></div>
+        <div class="form-group"><label>Racket-Verleih Buchungen/Tag</label><input type="number" id="rv_qty" value="15"></div>
+        <div class="form-group"><label>Racket-Verkauf Marge/Stück (€)</label><input type="number" id="rk_marge" value="50.00" step="1"></div>
+        <div class="form-group"><label>Racket-Verkauf Stück/Monat</label><input type="number" id="rk_qty" value="5"></div>
+        <div class="form-group"><label>Ball-Verleih Marge/Dose (€)</label><input type="number" id="bv_marge" value="0.84" step="0.1"></div>
+        <div class="form-group"><label>Ball-Verleih Dosen/Tag</label><input type="number" id="bv_qty" value="10"></div>
+        <div class="form-group"><label>Ball-Verkauf Marge/Dose (€)</label><input type="number" id="bk_marge" value="2.00" step="0.1"></div>
+        <div class="form-group"><label>Ball-Verkauf Dosen/Monat</label><input type="number" id="bk_qty" value="60"></div>
+      </div>
+      <div class="section-title">Training & Kurse</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Training Zusatzmarge/h (€)</label><input type="number" id="tr_marge" value="30.00" step="1"></div>
+        <div class="form-group"><label>Training Stunden/Woche</label><input type="number" id="tr_hrs" value="15"></div>
+        <div class="form-group"><label>Anfängerkurse Preis/Teilnehmer (€)</label><input type="number" id="ku_preis" value="10.00" step="1"></div>
+        <div class="form-group"><label>Anfängerkurse Teilnehmer/Monat</label><input type="number" id="ku_qty" value="16"></div>
+        <div class="form-group"><label>Feriencamp Preis/Kind/Tag (€)</label><input type="number" id="ca_preis" value="20.00" step="1"></div>
+        <div class="form-group"><label>Feriencamp Kinder×Tage/Jahr</label><input type="number" id="ca_qty" value="112"></div>
+      </div>
+      <div class="section-title">Events & Sponsoring</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Events Preis/Event (€)</label><input type="number" id="kg_preis" value="150.00" step="10"></div>
+        <div class="form-group"><label>Events Anzahl/Monat</label><input type="number" id="kg_qty" value="8"></div>
+        <div class="form-group"><label>Sponsoring gesamt/Jahr (€) 🟡</label><input type="number" id="spon" value="15000" step="1000" class="key"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(4)">← Zurück</button>
+    <button class="btn btn-primary" onclick="goTo(6)">Weiter: Kosten →</button>
+  </div>
+</div>
+
+<!-- STEP 6: KOSTEN -->
+<div class="step-content" id="step6">
+  <div class="card">
+    <div class="card-header"><span class="icon">💸</span><h2>Kostenplanung</h2></div>
+    <div class="card-body">
+      <div class="card-sub" style="margin:-24px -24px 16px;border-radius:0;">Personalkosten</div>
+      <table class="pers-table" id="pers-table">
+        <thead><tr><th>Position</th><th>Anzahl</th><th>Gehalt/Monat (€)</th><th>Gesamt/Monat (€)</th></tr></thead>
+        <tbody>
+          <tr><td>Geschäftsführer</td><td><input type="number" class="pers-anz" value="1" min="0" max="5"></td><td><input type="number" class="pers-sal" value="3333" min="0"></td><td class="pers-tot">3.333</td></tr>
+          <tr><td>Trainer / Manager</td><td><input type="number" class="pers-anz" value="2" min="0" max="10"></td><td><input type="number" class="pers-sal" value="3333" min="0"></td><td class="pers-tot">6.666</td></tr>
+          <tr><td>Rezeption / Theke</td><td><input type="number" class="pers-anz" value="1" min="0" max="5"></td><td><input type="number" class="pers-sal" value="1000" min="0"></td><td class="pers-tot">1.000</td></tr>
+          <tr><td>Mini-Job 1</td><td><input type="number" class="pers-anz" value="1" min="0" max="5"></td><td><input type="number" class="pers-sal" value="699" min="0"></td><td class="pers-tot">699</td></tr>
+          <tr><td>Mini-Job 2</td><td><input type="number" class="pers-anz" value="1" min="0" max="5"></td><td><input type="number" class="pers-sal" value="699" min="0"></td><td class="pers-tot">699</td></tr>
+          <tr><td>Mini-Job 3</td><td><input type="number" class="pers-anz" value="0" min="0" max="5"></td><td><input type="number" class="pers-sal" value="699" min="0"></td><td class="pers-tot">0</td></tr>
+          <tr class="total-row"><td colspan="3"><strong>Gesamt Personalkosten / Monat</strong></td><td id="pers-total-display"><strong>12.397</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="section-title" style="margin-top:24px;">Raumkosten (€/Monat)</div>
+      <div class="form-grid" style="margin-bottom:12px;">
+        <div class="form-group"><label>Nutzfläche (m²) 🟡</label><input type="number" id="raum_qm" value="0" min="0" step="50" class="key" oninput="calcMiete()"><span class="hint">Gesamtfläche Padel-Anlage</span></div>
+        <div class="form-group"><label>Mietpreis (€/m²/Monat) 🟡</label><input type="number" id="raum_qm_preis" value="0" min="0" step="0.5" class="key" oninput="calcMiete()"><span class="hint">Nettokaltmiete pro m²</span></div>
+        <div class="form-group"><label>→ Monatliche Miete (€) <span class="info" title="Automatisch: m² × €/m² — oder manuell eingeben">i</span></label><input type="number" id="raum_miete" value="0" min="0" step="100" class="key"><span class="hint">0 = noch nicht festgelegt</span></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Energiekosten</label><input type="number" id="raum_energie" value="3500" min="0" step="100"></div>
+        <div class="form-group"><label>Versicherung</label><input type="number" id="raum_vers" value="150" min="0"></div>
+        <div class="form-group"><label>Reinigung</label><input type="number" id="raum_rein" value="1000" min="0"></div>
+        <div class="form-group"><label>Müllentsorgung</label><input type="number" id="raum_muell" value="150" min="0"></div>
+        <div class="form-group"><label>Betriebskosten / NK</label><input type="number" id="raum_betr" value="3330" min="0"></div>
+      </div>
+      <div class="section-title">Betriebskosten (€/Monat)</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Marketing / Paid Ads</label><input type="number" id="bet_mkt" value="450" min="0"></div>
+        <div class="form-group"><label>IT / Buchungssoftware</label><input type="number" id="bet_it" value="875" min="0"></div>
+        <div class="form-group"><label>Buchführung / Steuerberat.</label><input type="number" id="bet_buch" value="750" min="0"></div>
+        <div class="form-group"><label>Reisekosten</label><input type="number" id="bet_reise" value="0" min="0"></div>
+        <div class="form-group"><label>Sonstige</label><input type="number" id="bet_sonst" value="300" min="0"></div>
+      </div>
+      <div class="section-title">AfA & Anpassungen</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Abschreibungen p.a. (€) 🟡</label><input type="number" id="afa" value="25000" min="0" step="1000" class="key"></div>
+        <div class="form-group"><label>Gehaltserhöhung p.a. (%)</label><input type="number" id="sal_adj" value="2" min="0" max="10" step="0.5"></div>
+        <div class="form-group"><label>Kostensteigerung p.a. (%)</label><input type="number" id="cost_adj" value="2" min="0" max="10" step="0.5"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(5)">← Zurück</button>
+    <button class="btn btn-primary" onclick="goTo(7)">Weiter: Finanzierung →</button>
+  </div>
+</div>
+
+<!-- STEP 7: FINANZIERUNG -->
+<div class="step-content" id="step7">
+  <div class="card">
+    <div class="card-header"><span class="icon">🏦</span><h2>Finanzierungs- & Investitionsplan</h2></div>
+    <div class="card-body">
+      <!-- GESELLSCHAFTER -->
+      <div class="section-title" style="margin-top:0;">Gesellschafter (Eigenkapital)</div>
+      <div style="background:var(--sky);border-radius:10px;padding:16px;border:1px solid var(--border);margin-bottom:16px;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Anzahl Gesellschafter 🟡</label>
+            <input type="number" id="ges_anzahl" value="2" min="1" max="20" class="key" oninput="calcGesEK()">
+          </div>
+          <div class="form-group">
+            <label>Einlage pro Gesellschafter (€)</label>
+            <input type="number" id="ges_einlage" value="25000" min="0" step="1000" class="key" oninput="calcGesEK()">
+          </div>
+          <div class="form-group">
+            <label>→ Eigenkapital Gesamt (€)</label>
+            <input type="number" id="fin_ek" value="50000" min="0" step="5000" style="font-weight:700;color:var(--navy);" readonly>
+            <span class="hint">Anzahl × Einlage</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FREMDFINANZIERUNG -->
+      <div class="section-title">Fremdfinanzierung</div>
+      <table class="fin-table">
+        <thead><tr><th>Position</th><th>Betrag (€)</th><th>Laufzeit (Mon.)</th><th>Zinssatz p.a. (%)</th><th>Rate/Monat (€)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Bankdarlehen</strong></td><td><input type="number" id="fin_bank" value="190000" step="5000"></td><td><input type="number" id="fin_bank_lz" value="48" min="6" max="240"></td><td><input type="number" id="fin_bank_zins" value="7" min="0" max="20" step="0.1"></td><td class="calc-cell" id="bank_rate_disp">4.536</td></tr>
+          <tr><td><strong>Leasing (Courts)</strong></td><td><input type="number" id="fin_leas" value="205000" step="5000"></td><td><input type="number" id="fin_leas_lz" value="48" min="6" max="120"></td><td><input type="number" id="fin_leas_zins" value="0" min="0" max="20" step="0.1"></td><td><input type="number" id="fin_leas_rate" value="4270.83" step="0.01" readonly style="background:#e8f5f0;color:#024d38;font-weight:700;" title="Wird automatisch aus Betrag/Laufzeit/Zins berechnet"></td></tr>
+          <tr><td><strong>Gesellschafterdarlehen 1</strong></td><td><input type="number" id="fin_gd1" value="20000" step="1000"></td><td><input type="number" id="fin_gd1_lz" value="12" min="1" max="120"></td><td><input type="number" id="fin_gd1_zins" value="7" min="0" max="20" step="0.1"></td><td class="calc-cell" id="gd1_rate_disp">1.783</td></tr>
+          <tr><td><strong>Gesellschafterdarlehen 2</strong></td><td><input type="number" id="fin_gd2" value="20000" step="1000"></td><td><input type="number" id="fin_gd2_lz" value="12" min="1" max="120"></td><td><input type="number" id="fin_gd2_zins" value="7" min="0" max="20" step="0.1"></td><td class="calc-cell" id="gd2_rate_disp">1.783</td></tr>
+        </tbody>
+      </table>
+
+      <!-- INVESTOREN -->
+      <div class="section-title" style="margin-top:20px;">Investoren-Einlage</div>
+      <div style="background:var(--sky);border-radius:10px;padding:16px;border:1px solid var(--border);margin-bottom:16px;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Anzahl Investoren</label>
+            <input type="number" id="inv_anzahl_gesamt" value="3" min="0" max="20" class="key" oninput="calcInvGesamt()">
+          </div>
+          <div class="form-group">
+            <label>Einlage pro Investor (€)</label>
+            <input type="number" id="inv_einlage_pro" value="83333" min="0" step="1000" class="key" oninput="calcInvGesamt()">
+          </div>
+          <div class="form-group">
+            <label>→ Investoren Gesamt (€)</label>
+            <input type="number" id="fin_inv" value="250000" step="10000" style="font-weight:700;color:var(--navy);" readonly oninput="updateInvShares()">
+            <span class="hint">Anzahl × Einlage</span>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group"><label>Gewinnbeteiligung Investoren (%)</label><input type="number" id="fin_gp" value="25" min="0" max="100" step="1"></div>
+          <div class="form-group"><label>Bankgebühren / Kontoführung (€/Mon.)</label><input type="number" id="fin_fee" value="70" min="0"></div>
+        </div>
+      </div>
+
+      <!-- VERMIETER -->
+      <div class="section-title">Vermieter-Beteiligung / Grundstücksinhaberbeteiligung</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--sky);border-radius:10px;border:1px solid var(--border);margin-bottom:12px;">
+        <input type="checkbox" id="vermieter_aktiv" style="width:18px;height:18px;accent-color:var(--navy);cursor:pointer;" onchange="updateVermieter()">
+        <label for="vermieter_aktiv" style="font-size:0.92rem;font-weight:600;color:var(--navy);cursor:pointer;text-transform:none;letter-spacing:0;">Vermieter-Beteiligung aktivieren (fließt in die Kalkulation ein)</label>
+      </div>
+      <div id="vermieter_fields" style="display:none;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Art der Beteiligung</label>
+            <select id="vermieter_typ" onchange="updateVermieter()">
+              <option value="miete">Mietreduktion (€/Monat Nachlass)</option>
+              <option value="umsatz">Umsatzbeteiligung (% vom Gesamtumsatz)</option>
+              <option value="kapital">Kapitalbeteiligung (% am Jahresüberschuss)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="vermieter_amt_label">Betrag / Prozentsatz</label>
+            <input type="number" id="vermieter_amt" value="0" min="0" step="0.5">
+            <span class="hint" id="vermieter_hint"></span>
+          </div>
+          <div class="form-group">
+            <label>Vermieter / Grundstückseigentümer</label>
+            <input type="text" id="vermieter_name" value="" placeholder="z.B. Müller Immobilien GmbH">
+          </div>
+        </div>
+        <div id="vermieter_desc" style="font-size:0.82rem;color:var(--muted);margin-top:8px;padding:10px 14px;background:var(--sky);border-radius:8px;border-left:3px solid var(--blue);"></div>
+      </div>
+
+      <!-- INVESTOREN-AUFSCHLÜSSELUNG (synchronisiert mit "Anzahl Investoren" oben) -->
+      <div class="section-title">Investoren-Aufschlüsselung (Namen & individuelle Kapitalanteile)</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:8px;">Die Anzahl der Zeilen ergibt sich automatisch aus „Anzahl Investoren" oben. Standardmäßig wird die gleiche Einlage pro Investor gesetzt — du kannst die Beträge hier individuell anpassen.</p>
+      <div id="inv-detail-wrap" style="display:none;">
+        <table class="inv-table">
+          <thead><tr><th style="width:40%">Investor / Name</th><th style="width:35%">Kapital (€)</th><th style="width:25%">Anteil (%)</th></tr></thead>
+          <tbody id="inv-detail-body"></tbody>
+        </table>
+      </div>
+
+      <!-- INVESTITIONSVOLUMEN -->
+      <div class="section-title">Investitionsvolumen</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Courts & Equipment (€)</label><input type="number" id="inv_courts" value="225000" step="5000"></div>
+        <div class="form-group"><label>Baukosten & Umbau (€)</label><input type="number" id="inv_bau" value="325000" step="5000"></div>
+        <div class="form-group"><label>Einrichtung & IT (€)</label><input type="number" id="inv_it" value="33000" step="1000"></div>
+        <div class="form-group"><label>Soft Costs & Sonstiges (€)</label><input type="number" id="inv_soft" value="80000" step="1000"></div>
+        <div class="form-group"><label>Working Capital (€)</label><input type="number" id="inv_wc" value="57000" step="1000"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(6)">← Zurück</button>
+    <button class="btn btn-primary" onclick="buildPreview(); goTo(8);">Vorschau & Scoring →</button>
+  </div>
+</div>
+
+<!-- STEP 8: GENERIEREN + SCORING -->
+<div class="step-content" id="step8">
+
+  <!-- GESAMTSCORING BOX -->
+  <div id="scoring-section" style="background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px;margin-bottom:24px;display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+      <span style="font-size:1.8rem;">🎯</span>
+      <div>
+        <h2 style="font-size:1.15rem;font-weight:700;color:var(--navy);">Objekt-Scoring & Empfehlung</h2>
+        <p style="font-size:0.82rem;color:var(--muted);">Automatische Gesamtbewertung — Standort 40% + Finanzperformance 60%</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:22px;" id="score-cards"></div>
+    <div style="background:var(--sky);border-radius:12px;padding:22px;border:1px solid var(--lightblue);">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:space-between;">
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">📍 Standort-Score (Gewichtung 40%)</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;"><div class="score-bar-wrap" style="height:14px;"><div class="score-bar" id="demo-bar-final" style="background:#036147;width:0%"></div></div></div>
+            <strong id="demo-score-final" style="min-width:42px;text-align:right;color:var(--navy);font-size:1.1rem;">–</strong>
+          </div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">📈 Finanz-Score (Gewichtung 60%)</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;"><div class="score-bar-wrap" style="height:14px;"><div class="score-bar" id="fin-bar-final" style="background:var(--green);width:0%"></div></div></div>
+            <strong id="fin-score-final" style="min-width:42px;text-align:right;color:var(--navy);font-size:1.1rem;">–</strong>
+          </div>
+        </div>
+        <div style="text-align:center;padding:0 10px;">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Gesamtscore</div>
+          <div style="font-size:3rem;font-weight:900;color:var(--navy);line-height:1;" id="gesamt-score-num">–</div>
+          <div style="font-size:1.5rem;margin-top:4px;" id="gesamt-stars">–</div>
+          <div style="margin-top:8px;" id="gesamt-tag"></div>
+        </div>
+      </div>
+      <div style="margin-top:18px;padding:14px 18px;background:white;border-radius:8px;border-left:4px solid var(--navy);">
+        <strong style="font-size:0.85rem;color:var(--navy);">Empfehlung: </strong><span style="font-size:0.85rem;" id="gesamt-empfehlung">–</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="export-target">
+  <!-- PREVIEW -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📊</span><h2>Zusammenfassung & Excel-Export</h2></div>
+    <div class="card-body"><div id="preview-content"><p style="text-align:center;color:var(--muted);padding:40px;">Bitte zuerst alle Schritte ausfüllen...</p></div></div>
+  </div>
+
+  <!-- INVESTOREN-RENDITE -->
+  <div id="inv-rendite-section" style="display:none;">
+    <div class="card">
+      <div class="card-header"><span class="icon">💎</span><h2>Investoren-Rendite & Gewinnverteilung</h2></div>
+      <div class="card-body" id="inv-rendite-body"></div>
+    </div>
+  </div>
+  </div><!-- /export-target -->
+
+  <div class="btn-row" style="flex-wrap:wrap;gap:12px;">
+    <button class="btn btn-secondary" onclick="goTo(7)">← Zurück</button>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn" style="background:#1a1a1a;color:white;padding:13px 22px;" id="png-btn" onclick="exportPNG()"><span>🖼</span> PNG exportieren</button>
+      <button class="btn" style="background:#8B0000;color:white;padding:13px 22px;" id="pdf-btn" onclick="exportPDF()"><span>📄</span> PDF exportieren</button>
+      <button class="btn btn-success" id="dl-btn" onclick="generateExcel()"><span>⬇</span> Excel generieren</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+<script>
+const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const MONTHS_SHORT=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31];
+const SEASON=[1.1,1.1,1.0,1.0,0.85,0.75,0.75,0.75,0.85,1.0,1.1,1.3];
+const UTIL_DEFAULTS={'DC High-Time':[89,87,87,73,64,56,56,56,73,87,89,89],'DC Low-Time':[25,21,20,16,16,16,16,16,16,21,25,29],'SC High-Time':[83,75,75,67,58,50,50,50,67,75,83,83],'SC Low-Time':[18,18,14,9,9,9,9,9,9,18,18,23]};
+const UTIL_KEYS=Object.keys(UTIL_DEFAULTS);
+
+// ── NAVIGATION ──
+let currentStep=1;
+function goTo(n){
+  document.getElementById('step'+currentStep).classList.remove('active');
+  document.getElementById('tab'+currentStep).classList.remove('active');
+  if(currentStep<n) document.getElementById('tab'+currentStep).classList.add('done');
+  currentStep=n;
+  document.getElementById('step'+n).classList.add('active');
+  document.getElementById('tab'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateFinRates();
+  updatePersTotal();
+}
+
+// ── UTIL TABLE ──
+function initUtilTable(){
+  const tbody=document.getElementById('util-body');
+  UTIL_KEYS.forEach(key=>{
+    const tr=document.createElement('tr');
+    let html=`<td>${key}</td>`;
+    UTIL_DEFAULTS[key].forEach((val,mi)=>{html+=`<td><input type="number" class="util-input" data-key="${key}" data-mi="${mi}" value="${val}" min="0" max="100"></td>`;});
+    tr.innerHTML=html; tbody.appendChild(tr);
+  });
+}
+function getUtil(key,mi){const el=document.querySelector(`[data-key="${key}"][data-mi="${mi}"]`);return el?parseFloat(el.value)/100:0;}
+
+// ── PERSONAL ──
+function updatePersTotal(){
+  let total=0;
+  document.querySelectorAll('#pers-table tbody tr:not(.total-row)').forEach(row=>{
+    const anz=parseFloat(row.querySelector('.pers-anz').value)||0;
+    const sal=parseFloat(row.querySelector('.pers-sal').value)||0;
+    const t=anz*sal; row.querySelector('.pers-tot').textContent=fmt(t); total+=t;
+  });
+  document.getElementById('pers-total-display').innerHTML=`<strong>${fmt(total)}</strong>`;
+}
+document.addEventListener('input',e=>{if(e.target.matches('.pers-anz,.pers-sal'))updatePersTotal();});
+
+// ── PMT & TILGUNGSPLAN ──
+function pmt(rate,nper,pv){if(nper<=0||pv<=0)return 0;if(rate===0)return pv/nper;return(rate*pv)/(1-Math.pow(1+rate,-nper));}
+// Tilgungsplan: gibt {byMonth:[{interest, principal, payment}], monthlyPayment} zurück
+function amortSchedule(amount,monthlyRate,periods){
+  if(amount<=0||periods<=0)return{byMonth:[],monthlyPayment:0};
+  const pay=monthlyRate===0?amount/periods:(monthlyRate*amount)/(1-Math.pow(1+monthlyRate,-periods));
+  let bal=amount;const byMonth=[];
+  for(let m=0;m<periods;m++){
+    const interest=Math.max(bal*monthlyRate,0);
+    const principal=Math.min(pay-interest,bal);
+    bal-=principal;
+    byMonth.push({interest,principal,payment:pay});
+  }
+  return{byMonth,monthlyPayment:pay};
+}
+// Schuldendienst-Slice für ein bestimmtes Planjahr (12 Monate ab yearIdx*12)
+function yearAmortSlice(schedule,yearIdx){
+  const start=yearIdx*12,end=Math.min(start+12,schedule.byMonth.length);
+  let interest=0,principal=0;
+  for(let i=start;i<end;i++){interest+=schedule.byMonth[i].interest;principal+=schedule.byMonth[i].principal;}
+  return{interest,principal,monthsActive:Math.max(0,end-start)};
+}
+function updateFinRates(){
+  const calc=(b,l,z,d)=>{const bv=parseFloat(document.getElementById(b).value)||0,lz=parseFloat(document.getElementById(l).value)||1,zi=(parseFloat(document.getElementById(z).value)||0)/100/12;const r=pmt(zi,lz,bv);const el=document.getElementById(d);if(el)el.textContent=fmt(r);return r;};
+  calc('fin_bank','fin_bank_lz','fin_bank_zins','bank_rate_disp');
+  calc('fin_gd1','fin_gd1_lz','fin_gd1_zins','gd1_rate_disp');
+  calc('fin_gd2','fin_gd2_lz','fin_gd2_zins','gd2_rate_disp');
+  // FIX #8: Leasing-Rate analog automatisch berechnen
+  const lbv=parseFloat(document.getElementById('fin_leas').value)||0;
+  const llz=parseFloat(document.getElementById('fin_leas_lz').value)||1;
+  const lzi=(parseFloat(document.getElementById('fin_leas_zins').value)||0)/100/12;
+  const lr=pmt(lzi,llz,lbv);
+  const leasEl=document.getElementById('fin_leas_rate');
+  if(leasEl)leasEl.value=lr.toFixed(2);
+}
+['fin_bank','fin_bank_lz','fin_bank_zins','fin_gd1','fin_gd1_lz','fin_gd1_zins','fin_gd2','fin_gd2_lz','fin_gd2_zins','fin_leas','fin_leas_lz','fin_leas_zins'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateFinRates);});
+
+// ── VERMIETER ──
+function updateVermieter(){
+  const aktiv=document.getElementById('vermieter_aktiv').checked;
+  const fields=document.getElementById('vermieter_fields');
+  fields.style.display=aktiv?'block':'none';
+  if(!aktiv)return;
+  const typEl=document.getElementById('vermieter_typ');
+  if(!typEl)return;
+  const typ=typEl.value;
+  const desc=document.getElementById('vermieter_desc');
+  const lbl=document.getElementById('vermieter_amt_label');
+  const hint=document.getElementById('vermieter_hint');
+  if(typ==='miete'){lbl.textContent='Mietreduktion (€/Monat)';hint.textContent='Wird von der monatlichen Miete abgezogen';desc.textContent='💡 Der Vermieter gewährt einen monatlichen Mietnachlass. Reduziert die Raumkosten direkt.';}
+  else if(typ==='umsatz'){lbl.textContent='Umsatzbeteiligung (%)';hint.textContent='Prozentualer Anteil am monatlichen Gesamtumsatz';desc.textContent='💡 Der Vermieter erhält einen Prozentsatz des monatlichen Umsatzes — wird als variable Kosten kalkuliert.';}
+  else if(typ==='kapital'){lbl.textContent='Kapitalbeteiligung am Gewinn (%)';hint.textContent='Prozentualer Anteil am Jahresüberschuss';desc.textContent='💡 Der Vermieter ist am Gewinn beteiligt, ähnlich einem stillen Gesellschafter.';}
+}
+
+// ── INVESTOR TABLE (FIX #7: Single Source of Truth = inv_anzahl_gesamt) ──
+function updateInvTable(){
+  const n=parseInt(document.getElementById('inv_anzahl_gesamt').value)||0;
+  const defaultEinlage=parseFloat(document.getElementById('inv_einlage_pro').value)||0;
+  const wrap=document.getElementById('inv-detail-wrap');
+  const tbody=document.getElementById('inv-detail-body');
+  if(n===0){wrap.style.display='none';tbody.innerHTML='';return;}
+  wrap.style.display='block';
+  const existing=tbody.querySelectorAll('tr').length;
+  if(n>existing){
+    for(let i=existing;i<n;i++){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td><input type="text" class="inv-name" value="Investor ${i+1}" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.88rem;background:var(--sky)"></td><td><input type="number" class="inv-capital" value="${defaultEinlage}" step="10000" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.88rem;background:var(--sky)" oninput="updateInvShares()"></td><td class="inv-share-cell" style="font-weight:700;color:var(--navy);">–</td>`;
+      tbody.appendChild(tr);
+    }
+  } else {
+    const rows=tbody.querySelectorAll('tr');
+    for(let i=existing-1;i>=n;i--)tbody.removeChild(rows[i]);
+  }
+  updateInvShares();
+}
+function updateInvShares(){
+  const total=parseFloat(document.getElementById('fin_inv').value)||0;
+  const caps=Array.from(document.querySelectorAll('.inv-capital')).map(e=>parseFloat(e.value)||0);
+  const cells=document.querySelectorAll('.inv-share-cell');
+  caps.forEach((cap,i)=>{if(cells[i])cells[i].textContent=(total>0?(cap/total*100).toFixed(1):0)+'%';});
+}
+
+// ── FORMAT ──
+function v(id){return parseFloat(document.getElementById(id).value)||0;}
+function s(id){return document.getElementById(id).value;}
+function fmt(n){if(n===undefined||n===null||isNaN(n))return'-';return Math.round(n).toLocaleString('de-DE');}
+function fmt2(n){if(n===undefined||n===null||isNaN(n))return'-';return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtK(n){return(Math.round(n/100)/10).toLocaleString('de-DE',{minimumFractionDigits:1})+' k';}
+function fmtPct(n){return(n*100).toFixed(1)+'%';}
+function clr(n){return n<0?'neg':'pos';}
+
+// ── DEMO SCORE ──
+function calcDemoScore(){
+  const pop=v('demo_population');
+  const inc=document.getElementById('demo_income').value;
+  const sport=v('demo_sport');
+  const comp=parseInt(document.getElementById('demo_competitors').value)||0;
+  const transit=document.getElementById('demo_transit').value;
+  const autoEl=document.getElementById('demo_auto');
+  const autoVal=autoEl?autoEl.value:'gut';
+  const parkAnlage=parseFloat(document.getElementById('demo_park_anlage')?.value)||0;
+  const parkOeffentl=parseFloat(document.getElementById('demo_park_oeffentl')?.value)||0;
+  const parkTotal=parkAnlage+parkOeffentl;
+  const popScore=pop>=500000?100:pop>=200000?85:pop>=100000?65:pop>=50000?40:15;
+  const incScore={niedrig:25,mittel:60,hoch:85,sehr_hoch:100}[inc]||60;
+  const sportScore=Math.min(sport,10)*10;
+  const compScore=[100,85,65,45,25,10][Math.min(comp,5)];
+  const transitScore={sehr_gut:100,gut:75,mittel:50,schlecht:25}[transit]||50;
+  const autoScore={sehr_gut:100,gut:75,mittel:50,schlecht:25}[autoVal]||75;
+  const parkingScore=parkTotal>=80?100:parkTotal>=50?85:parkTotal>=30?65:parkTotal>=15?45:20;
+  // Weights: Einwohner20%, Einkommen15%, Sport15%, Konkurrenz20%, ÖPNV10%, Auto10%, Parken10%
+  const total=Math.round(popScore*0.20+incScore*0.15+sportScore*0.15+compScore*0.20+transitScore*0.10+autoScore*0.10+parkingScore*0.10);
+  return{total,popScore,incScore,sportScore,compScore,transitScore,autoScore,parkingScore,parkTotal};
+}
+
+function updateDemoScore(){
+  const sc=calcDemoScore();
+  const numEl=document.getElementById('demo-score-num');
+  if(numEl)numEl.textContent=sc.total;
+  const bars=[
+    {label:'Einwohner (20%)',score:sc.popScore,color:'#036147'},
+    {label:'Einkommen (15%)',score:sc.incScore,color:'#047a5a'},
+    {label:'Sportaffinität (15%)',score:sc.sportScore,color:'#FFA500'},
+    {label:'Konkurrenz (20%)',score:sc.compScore,color:'#9B59B6'},
+    {label:'ÖPNV (10%)',score:sc.transitScore,color:'#E74C3C'},
+    {label:'Auto-Anbindung (10%)',score:sc.autoScore,color:'#3498DB'},
+    {label:'Parken gesamt (10%)',score:sc.parkingScore,color:'#1ABC9C'},
+  ];
+  document.getElementById('demo-score-bars').innerHTML=bars.map(b=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="min-width:140px;font-size:0.78rem;color:var(--muted);">${b.label}</div>
+      <div style="flex:1;"><div class="score-bar-wrap"><div class="score-bar" style="background:${b.color};width:${b.score}%"></div></div></div>
+      <div style="min-width:32px;text-align:right;font-size:0.82rem;font-weight:700;color:var(--navy);">${b.score}</div>
+    </div>`).join('');
+}
+
+// ── FIN SCORE ──
+function calcFinScore(y1,totalInv){
+  const em=y1.totalRev>0?y1.ebitda/y1.totalRev:0;
+  const pb=y1.ju>0?totalInv/y1.ju:999;
+  const eScore=em>=0.30?100:em>=0.25?85:em>=0.20?70:em>=0.15?55:em>=0.10?40:em>=0.05?25:em>0?10:0;
+  const pScore=pb<=3?100:pb<=5?85:pb<=7?70:pb<=10?50:pb<=15?25:5;
+  const jScore=y1.ju>0?100:0;
+  return{score:Math.round(eScore*0.40+pScore*0.40+jScore*0.20),eScore,pScore,jScore,em,pb};
+}
+
+// ── COLLECT INPUTS ──
+function collectInputs(){
+  const persTotal=Array.from(document.querySelectorAll('#pers-table tbody tr:not(.total-row)')).reduce((acc,row)=>acc+(parseFloat(row.querySelector('.pers-anz').value)||0)*(parseFloat(row.querySelector('.pers-sal').value)||0),0);
+  // FIX #1: Tilgungspläne für alle Darlehen (Zins/Tilgung-Split)
+  const bankSched=amortSchedule(v('fin_bank'),v('fin_bank_zins')/100/12,v('fin_bank_lz'));
+  const gd1Sched =amortSchedule(v('fin_gd1'), v('fin_gd1_zins') /100/12,v('fin_gd1_lz'));
+  const gd2Sched =amortSchedule(v('fin_gd2'), v('fin_gd2_zins') /100/12,v('fin_gd2_lz'));
+  const leasSched=amortSchedule(v('fin_leas'),v('fin_leas_zins')/100/12,v('fin_leas_lz'));
+  const debtSchedules=[
+    {name:'Bankdarlehen',schedule:bankSched,amount:v('fin_bank')},
+    {name:'Leasing',schedule:leasSched,amount:v('fin_leas')},
+    {name:'GD 1',schedule:gd1Sched,amount:v('fin_gd1')},
+    {name:'GD 2',schedule:gd2Sched,amount:v('fin_gd2')},
+  ];
+  const bankRate=bankSched.monthlyPayment;
+  const gd1Rate=gd1Sched.monthlyPayment;
+  const gd2Rate=gd2Sched.monthlyPayment;
+  const leasRate=leasSched.monthlyPayment;
+  const fees=v('fin_fee');
+
+  const vermieterAktiv=document.getElementById('vermieter_aktiv').checked;
+  const vermieterTyp=vermieterAktiv?(s('vermieter_typ')||'keine'):'keine';
+  const vermieterAmt=v('vermieter_amt');
+  const vermieterMieteRedux=vermieterTyp==='miete'?vermieterAmt:0;
+  const vermieterUmsatzPct=vermieterTyp==='umsatz'?vermieterAmt/100:0;
+  const vermieterGewinnPct=vermieterTyp==='kapital'?vermieterAmt/100:0;
+
+  const raumTotal=v('raum_miete')+v('raum_energie')+v('raum_vers')+v('raum_rein')+v('raum_muell')+v('raum_betr')-vermieterMieteRedux;
+  const betTotal=v('bet_mkt')+v('bet_it')+v('bet_buch')+v('bet_reise')+v('bet_sonst');
+
+  // FIX #7: Investoren aus inv_anzahl_gesamt (Single Source of Truth)
+  const invCount=parseInt(document.getElementById('inv_anzahl_gesamt').value)||0;
+  const investors=[];
+  if(invCount>0){
+    const nameEls=document.querySelectorAll('.inv-name');
+    const capEls=document.querySelectorAll('.inv-capital');
+    const totalInvCapital=v('fin_inv');
+    const defaultEinlage=parseFloat(document.getElementById('inv_einlage_pro').value)||0;
+    for(let i=0;i<invCount;i++){
+      const cap=capEls[i]?(parseFloat(capEls[i].value)||0):defaultEinlage;
+      const name=nameEls[i]?nameEls[i].value:`Investor ${i+1}`;
+      investors.push({name:name||`Investor ${i+1}`,capital:cap,share:totalInvCapital>0?cap/totalInvCapital:1/invCount});
+    }
+  }
+
+  // FIX #10: MwSt funktional — Brutto-Preise auf Netto normalisieren
+  const mwst=v('mwst')/100;
+  const priceMode=(document.getElementById('price_mode')||{}).value||'netto';
+  const norm=p=>priceMode==='brutto'?p/(1+mwst):p;
+  return{
+    name:s('proj_name'),startYear:v('start_year'),planYears:v('plan_years'),
+    mwst,priceMode,priceAdj:v('price_adj')/100,
+    dc:v('dc_courts'),sc:v('sc_courts'),
+    openH:v('open_hours'),htH:v('ht_hours'),ltH:v('open_hours')-v('ht_hours'),
+    dcHT:norm(v('dc_ht_price')),dcLT:norm(v('dc_lt_price')),scHT:norm(v('sc_ht_price')),scLT:norm(v('sc_lt_price')),
+    // Original-Brutto/Netto für Anzeige
+    dcHT_in:v('dc_ht_price'),dcLT_in:v('dc_lt_price'),scHT_in:v('sc_ht_price'),scLT_in:v('sc_lt_price'),
+    bar_m:v('bar_marge'),bar_q:v('bar_qty'),
+    rv_m:v('rv_marge'),rv_q:v('rv_qty'),rk_m:v('rk_marge'),rk_q:v('rk_qty'),
+    bv_m:v('bv_marge'),bv_q:v('bv_qty'),bk_m:v('bk_marge'),bk_q:v('bk_qty'),
+    tr_m:v('tr_marge'),tr_h:v('tr_hrs'),ku_p:v('ku_preis'),ku_q:v('ku_qty'),
+    ca_p:v('ca_preis'),ca_q:v('ca_qty'),kg_p:v('kg_preis'),kg_q:v('kg_qty'),spon:v('spon'),
+    persTotal,raumTotal,betTotal,
+    debtSchedules,bankRate,gd1Rate,gd2Rate,leasRate,fees,
+    afa:v('afa'),kst:0.15,gew:0.1098,soli:0.055,
+    salAdj:v('sal_adj')/100,costAdj:v('cost_adj')/100,
+    ek:v('fin_ek'),bankAmt:v('fin_bank'),leasAmt:v('fin_leas'),
+    gd1Amt:v('fin_gd1'),gd2Amt:v('fin_gd2'),invAmt:v('fin_inv'),
+    gp:v('fin_gp')/100,
+    raumQm:v('raum_qm'),raumQmPreis:v('raum_qm_preis'),invCourts:v('inv_courts'),invBau:v('inv_bau'),invIT:v('inv_it'),invSoft:v('inv_soft'),invWC:v('inv_wc'),
+    bestFactor:1.15,worstFactor:0.80,
+    vermieterTyp,vermieterAmt,vermieterMieteRedux,vermieterUmsatzPct,vermieterGewinnPct,
+    vermieterName:s('vermieter_name'),
+    investors,invCount,
+    demoStadt:s('demo_stadt'),demoPopulation:v('demo_population'),
+    demoIncome:s('demo_income'),demoSport:v('demo_sport'),
+    demoCompetitors:parseInt(document.getElementById('demo_competitors').value)||0,
+    demoTransit:s('demo_transit'),demoAuto:s('demo_auto'),
+    demoParkAnlage:v('demo_park_anlage'),demoParkOeffentl:v('demo_park_oeffentl'),
+  };
+}
+
+// ── CALC MONTH ──
+// Erwartet inp.monthlyInterest (= Jahres-Zinsen/12) und inp.fees (Bankgebühren/Monat)
+function calcMonth(inp,mi,factor=1){
+  const d=DAYS[mi],s2=SEASON[mi],ht=inp.htH,lt=inp.ltH;
+  const dc_ht=inp.dc*ht*d*getUtil('DC High-Time',mi)*factor*inp.dcHT;
+  const dc_lt=inp.dc*lt*d*getUtil('DC Low-Time',mi)*factor*inp.dcLT;
+  const sc_ht=inp.sc*ht*d*getUtil('SC High-Time',mi)*factor*inp.scHT;
+  const sc_lt=inp.sc*lt*d*getUtil('SC Low-Time',mi)*factor*inp.scLT;
+  const courtRev=dc_ht+dc_lt+sc_ht+sc_lt;
+  // FIX #3: Frequenz-Faktor — Best/Worst skaliert auch volumenabhängige Nebenumsätze
+  // (Auslastung treibt Bar/Shop/Training/Kurse). Sponsoring bleibt fix (Vertragsgeld).
+  const f=factor;
+  const bar=inp.bar_m*inp.bar_q*d*s2*f;
+  const rv=inp.rv_m*inp.rv_q*d*s2*f;
+  const rk=inp.rk_m*inp.rk_q*s2*f;
+  const bv=inp.bv_m*inp.bv_q*d*s2*f;
+  const bk=inp.bk_m*inp.bk_q*s2*f;
+  const tr=inp.tr_m*inp.tr_h*4*s2*f;
+  const ku=inp.ku_p*inp.ku_q*s2*f;
+  const ca=(mi===6||mi===7)?inp.ca_p*inp.ca_q/2*f:0;
+  const kg=inp.kg_p*inp.kg_q*f;
+  // FIX #5: Sponsoring gleichmäßig auf 12 Monate verteilen, NICHT mit Best/Worst skalieren
+  const sp=inp.spon/12;
+  const weitereRev=bar+rv+rk+bv+bk+tr+ku+ca+kg+sp;
+  const totalRev=courtRev+weitereRev;
+  const vermieterUmsatzCost=totalRev*(inp.vermieterUmsatzPct||0);
+  // FIX #1: opCost OHNE Schuldendienst (EBITDA = Umsatz - Op-Kosten)
+  const opCost=inp.persTotal+inp.raumTotal+inp.betTotal+vermieterUmsatzCost;
+  const ebitda=totalRev-opCost;
+  const afa=inp.afa/12;
+  const ebit=ebitda-afa;
+  // FIX #1: Nur Zinsen + Bankgebühren in G+V (Tilgung ist Cashflow, nicht Aufwand)
+  const zins=inp.monthlyInterest||0;
+  const fees=inp.fees||0;
+  const geld=zins+fees;
+  const ebt=ebit-geld;
+  // Steuern werden in calcYear auf Jahres-EBT berechnet (FIX #2). Hier nur Platzhalter.
+  return{courtRev,weitereRev,totalRev,pers:inp.persTotal,raum:inp.raumTotal,bet:inp.betTotal,zins,fees,geld,vermieterCost:vermieterUmsatzCost,opCost,totalCost:opCost+geld,ebitda,afa,ebit,ebt,kst:0,gew:0,soli:0,ju:ebt};
+}
+
+function calcYear(inp,yearIdx=0,factor=1){
+  // FIX #1: Schuldendienst dieses Planjahres (Zins + Tilgung getrennt)
+  let yInterest=0,yPrincipal=0;
+  (inp.debtSchedules||[]).forEach(d=>{const sl=yearAmortSlice(d.schedule,yearIdx);yInterest+=sl.interest;yPrincipal+=sl.principal;});
+  const monthlyInterest=yInterest/12;
+
+  const pa=Math.pow(1+inp.priceAdj,yearIdx),ca=Math.pow(1+inp.costAdj,yearIdx);
+  const inpAdj={...inp,
+    dcHT:inp.dcHT*pa,dcLT:inp.dcLT*pa,scHT:inp.scHT*pa,scLT:inp.scLT*pa,
+    persTotal:inp.persTotal*Math.pow(1+inp.salAdj,yearIdx),
+    raumTotal:inp.raumTotal*ca,betTotal:inp.betTotal*ca,
+    monthlyInterest,fees:inp.fees};
+  const months=MONTHS.map((_,mi)=>calcMonth(inpAdj,mi,factor));
+
+  const totalRev=sum(months,'totalRev');
+  const ebitda=sum(months,'ebitda');
+  const ebit=sum(months,'ebit');
+  const ebt=sum(months,'ebt');
+  // FIX #2: Steuern auf Jahres-EBT (nicht monatlich mit Math.max)
+  const kst=Math.max(ebt*inp.kst,0);
+  const gew=Math.max(ebt*inp.gew,0);
+  const soli=Math.max(kst*inp.soli,0);
+  const taxes=kst+gew+soli;
+  const ju=ebt-taxes;
+  // Steuern für Darstellung gleichmäßig auf 12 Monate verteilen
+  months.forEach(m=>{m.kst=kst/12;m.gew=gew/12;m.soli=soli/12;m.ju=m.ebt-taxes/12;});
+
+  // FIX #6: Vermieter-Gewinnbeteiligung below-the-line vom JÜ abziehen
+  const vermieterGewinnAusschuettung=Math.max(ju,0)*(inp.vermieterGewinnPct||0);
+  const juDistributable=ju-vermieterGewinnAusschuettung;
+  return{
+    courtRev:sum(months,'courtRev'),weitereRev:sum(months,'weitereRev'),totalRev,
+    totalCost:sum(months,'totalCost'),
+    pers:sum(months,'pers'),raum:sum(months,'raum'),bet:sum(months,'bet'),
+    zins:yInterest,fees:inp.fees*12,geld:yInterest+inp.fees*12,
+    tilgung:yPrincipal,kapitaldienst:yInterest+yPrincipal+inp.fees*12,
+    vermieterCost:sum(months,'vermieterCost'),
+    vermieterGewinnAusschuettung,juDistributable,
+    ebitda,afa:inp.afa,ebit,ebt,kst,gew,soli,ju,months
+  };
+}
+function sum(arr,key){return arr.reduce((a,b)=>a+(b[key]||0),0);}
+
+// ── CASHFLOW & DSCR ──
+function buildCashflowYears(inp,years){
+  const totalInv=inp.invCourts+inp.invBau+inp.invIT+inp.invSoft+inp.invWC;
+  const finanzierungJahr0=inp.ek+inp.bankAmt+inp.leasAmt+inp.gd1Amt+inp.gd2Amt+inp.invAmt;
+  // Jahr 0 = Vorlauf (Investition + Finanzierungseingänge)
+  const jahr0={label:'Jahr 0 (Setup)',cfOp:0,cfInv:-totalInv,cfFin:finanzierungJahr0,jahresCF:finanzierungJahr0-totalInv,kumCF:finanzierungJahr0-totalInv};
+  let kum=jahr0.kumCF;
+  const rows=[jahr0];
+  years.forEach((y,i)=>{
+    const ju=inp.vermieterTyp==='kapital'?(y.juDistributable||y.ju):y.ju;
+    const cfOp=ju+y.afa;             // operativer CF (vereinfacht: JÜ + AfA)
+    const cfFin=-y.tilgung;          // Tilgung mindert Cash
+    const cfInv=0;                   // keine weiteren Investitionen modelliert
+    const jahresCF=cfOp+cfFin+cfInv;
+    kum+=jahresCF;
+    rows.push({label:`Jahr ${i+1}`,cfOp,cfInv,cfFin,jahresCF,kumCF:kum,ebitda:y.ebitda,kapitaldienst:y.kapitaldienst,dscr:y.kapitaldienst>0?y.ebitda/y.kapitaldienst:0});
+  });
+  return rows;
+}
+
+// ── BUILD PREVIEW ──
+function buildPreview(){
+  const inp=collectInputs();
+  const y1=calcYear(inp,0,1);
+  const yB=calcYear(inp,0,inp.bestFactor);
+  const yW=calcYear(inp,0,inp.worstFactor);
+  const years=[];
+  // FIX #9: Kein Hard-Cap mehr auf 10 Jahre — Plan bis zu inp.planYears (max 15 per UI)
+  for(let i=0;i<inp.planYears;i++)years.push(calcYear(inp,i,1));
+  let cumJU=0;
+  const totalInv=inp.invCourts+inp.invBau+inp.invIT+inp.invSoft+inp.invWC;
+  const ebitdaMargin=y1.totalRev>0?y1.ebitda/y1.totalRev:0;
+
+  // ── Scoring ──
+  const demoSc=calcDemoScore();
+  const finSc=calcFinScore(y1,totalInv);
+  const gesamtScore=Math.round(demoSc.total*0.40+finSc.score*0.60);
+  renderScoring(demoSc,finSc,gesamtScore,y1,totalInv);
+  renderInvRendite(inp,years);
+
+  // KPIs (mit DSCR + Break-Even)
+  const dscr1=y1.kapitaldienst>0?y1.ebitda/y1.kapitaldienst:0;
+  const dscrCls=dscr1>=1.25?'green':dscr1>=1.0?'':'navy';
+  let cumCheck=0,beYear=null;
+  years.forEach((y,i)=>{cumCheck+=(inp.vermieterTyp==='kapital'?y.juDistributable:y.ju);if(beYear===null&&cumCheck>=0)beYear=i+1;});
+  let html=`<div class="summary-grid">
+    <div class="kpi-card"><div class="kpi-label">Gesamtumsatz Jahr 1</div><div class="kpi-value">${fmtK(y1.totalRev)}</div><div class="kpi-unit">€ netto</div></div>
+    <div class="kpi-card"><div class="kpi-label">EBITDA Jahr 1</div><div class="kpi-value ${clr(y1.ebitda)}">${fmtK(y1.ebitda)}</div><div class="kpi-unit">${fmtPct(ebitdaMargin)} Marge</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Jahresüberschuss J1</div><div class="kpi-value ${clr(y1.ju)}">${fmtK(y1.ju)}</div><div class="kpi-unit">nach Steuern</div></div>
+    <div class="kpi-card ${dscrCls}"><div class="kpi-label">DSCR Jahr 1</div><div class="kpi-value">${dscr1>0?dscr1.toFixed(2)+'×':'–'}</div><div class="kpi-unit">${dscr1>=1.25?'sehr solide':dscr1>=1.0?'grenzwertig':'kritisch'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Break-Even (kum. JÜ ≥ 0)</div><div class="kpi-value">${beYear?'Jahr '+beYear:'>'+inp.planYears}</div><div class="kpi-unit">${beYear?'Amortisation aus JÜ':'innerhalb Planhorizont nicht erreicht'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Gesamtinvestition</div><div class="kpi-value">${fmtK(totalInv)}</div><div class="kpi-unit">€</div></div>
+    <div class="kpi-card navy"><div class="kpi-label">Courts</div><div class="kpi-value">${inp.dc} DC + ${inp.sc} SC</div><div class="kpi-unit">${inp.dc+inp.sc} Courts gesamt</div></div>
+  </div>`;
+
+  // Charts-Container
+  html+=`<div class="section-title" style="margin-top:28px;">Visualisierung</div>
+  <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:8px;">
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:16px;"><canvas id="chart-mjp" height="120"></canvas></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:0.85rem;font-weight:700;color:var(--navy);margin-bottom:8px;text-align:center;">Investitionsverteilung</div><canvas id="chart-inv" height="180"></canvas></div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:0.85rem;font-weight:700;color:var(--navy);margin-bottom:8px;text-align:center;">Finanzierungsmix</div><canvas id="chart-fin" height="180"></canvas></div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:0.85rem;font-weight:700;color:var(--navy);margin-bottom:8px;text-align:center;">Umsatzstruktur Jahr 1</div><canvas id="chart-rev" height="180"></canvas></div>
+  </div>`;
+
+  // monatliche G+V (mit korrekter Zins/Tilgung-Trennung & Jahressteuern verteilt)
+  html+=`<div class="section-title" style="margin-top:28px;">G+V Jahr 1 – Monatlich</div><div style="overflow-x:auto;"><table class="year-table" style="min-width:900px;"><thead><tr><th>Position</th>${MONTHS_SHORT.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  [
+    {label:'Court-Umsatz',key:'courtRev',style:''},
+    {label:'Weitere Umsätze',key:'weitereRev',style:''},
+    {label:'UMSATZ GESAMT',key:'totalRev',style:'total-row'},
+    {label:'Personalkosten',key:'pers',style:''},
+    {label:'Raumkosten',key:'raum',style:''},
+    {label:'Betriebskosten',key:'bet',style:''},
+    {label:'Vermieter-Anteil',key:'vermieterCost',style:''},
+    {label:'EBITDA',key:'ebitda',style:'result-row'},
+    {label:'AfA',key:'afa',style:''},
+    {label:'Zinsen + Bankgebühren',key:'geld',style:''},
+    {label:'EBT (Vorsteuer)',key:'ebt',style:''},
+    {label:'Steuern (KSt+Gewerbe+Soli)',key:null,calc:m=>(m.kst||0)+(m.gew||0)+(m.soli||0),style:''},
+    {label:'Jahresüberschuss',key:'ju',style:'result-row'},
+  ].forEach(row=>{
+    const getVal=row.calc?row.calc:m=>(m[row.key]||0);
+    const tot=y1.months.reduce((a,m)=>a+getVal(m),0);
+    html+=`<tr class="${row.style}"><td>${row.label}</td>`;
+    y1.months.forEach(m=>{const val=getVal(m);html+=`<td class="${clr(val)}">${fmt(val)}</td>`;});
+    html+=`<td class="${clr(tot)}"><strong>${fmt(tot)}</strong></td></tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  // Cashflow-Hinweis Tilgung
+  html+=`<div style="margin-top:8px;padding:10px 14px;background:var(--sky);border-left:3px solid var(--blue);border-radius:6px;font-size:0.82rem;color:var(--muted);"><strong style="color:var(--navy);">ℹ Hinweis:</strong> Tilgung Jahr 1: <strong>${fmt(y1.tilgung)} €</strong> – ist <em>kein</em> G+V-Aufwand, sondern Cashflow-Position. Kapitaldienst gesamt (Zins+Tilgung+Gebühren): <strong>${fmt(y1.kapitaldienst)} €</strong>.</div>`;
+
+  // Mehrjahresplan (mit Zinsen, Tilgung, Vermieter-Gewinnanteil, DSCR)
+  html+=`<div class="section-title" style="margin-top:28px;">Mehrjahresplan – ${inp.planYears} Jahre Base Case</div><div style="overflow-x:auto;"><table class="year-table"><thead><tr><th>Position</th>${years.map((_,i)=>`<th>Jahr ${i+1}<br><small style="font-weight:400;opacity:.8">${inp.startYear+i}</small></th>`).join('')}</tr></thead><tbody>`;
+  const mjLines=[
+    {label:'Court-Umsatz',key:'courtRev',style:''},
+    {label:'Weitere Umsätze',key:'weitereRev',style:''},
+    {label:'UMSATZ GESAMT',key:'totalRev',style:'total-row'},
+    {label:'EBITDA',key:'ebitda',style:'result-row'},
+    {label:'AfA',key:'afa',style:''},
+    {label:'Zinsen',key:'zins',style:''},
+    {label:'EBT',key:'ebt',style:''},
+    {label:'JAHRESÜBERSCHUSS',key:'ju',style:'result-row'},
+  ];
+  // FIX #6: Vermieter-Gewinnanteil-Zeile nur einblenden wenn aktiv
+  if(inp.vermieterTyp==='kapital'&&inp.vermieterGewinnPct>0){
+    mjLines.push({label:`./. Vermieter-Anteil (${(inp.vermieterGewinnPct*100).toFixed(1)}%)`,key:'vermieterGewinnAusschuettung',style:''});
+    mjLines.push({label:'VERFÜGBARER JÜ',key:'juDistributable',style:'result-row'});
+  }
+  mjLines.push({label:'Tilgung (Cashflow)',key:'tilgung',style:''});
+  mjLines.forEach(line=>{
+    html+=`<tr class="${line.style}"><td>${line.label}</td>`;
+    years.forEach(y=>html+=`<td class="${clr(y[line.key]||0)}">${fmt(y[line.key]||0)}</td>`);
+    html+=`</tr>`;
+  });
+  html+=`<tr style="background:#C8E6C9;font-weight:700;"><td>Kumulierter JÜ</td>`;
+  years.forEach(y=>{cumJU+=(inp.vermieterTyp==='kapital'?y.juDistributable:y.ju);html+=`<td class="${clr(cumJU)}">${fmt(cumJU)}</td>`;});
+  html+=`</tr>`;
+  // DSCR-Zeile
+  html+=`<tr style="background:var(--lightblue);font-weight:700;"><td>DSCR (EBITDA ÷ Kapitaldienst)</td>`;
+  years.forEach(y=>{const d=y.kapitaldienst>0?y.ebitda/y.kapitaldienst:0;const cls=d>=1.25?'pos':d>=1.0?'':'neg';html+=`<td class="${cls}">${d>0?d.toFixed(2)+'×':'–'}</td>`;});
+  html+=`</tr></tbody></table></div>`;
+
+  // Cashflow-Plan
+  const cfRows=buildCashflowYears(inp,years);
+  html+=`<div class="section-title" style="margin-top:28px;">Cashflow-Plan (vereinfacht)</div><div style="overflow-x:auto;"><table class="year-table"><thead><tr><th>Position</th>${cfRows.map(r=>`<th>${r.label}</th>`).join('')}</tr></thead><tbody>`;
+  [
+    {label:'CF operativ (JÜ + AfA)',k:'cfOp',style:''},
+    {label:'CF Investition',k:'cfInv',style:''},
+    {label:'CF Finanzierung (EK/FK ↔ Tilgung)',k:'cfFin',style:''},
+    {label:'JAHRES-CASHFLOW',k:'jahresCF',style:'total-row'},
+    {label:'Kumulierter Cashbestand',k:'kumCF',style:'result-row'},
+  ].forEach(line=>{
+    html+=`<tr class="${line.style}"><td>${line.label}</td>`;
+    cfRows.forEach(r=>html+=`<td class="${clr(r[line.k]||0)}">${fmt(r[line.k]||0)}</td>`);
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  html+=`<div style="margin-top:8px;padding:10px 14px;background:var(--sky);border-left:3px solid var(--blue);border-radius:6px;font-size:0.82rem;color:var(--muted);"><strong style="color:var(--navy);">ℹ Hinweis:</strong> Vereinfachter direkter CF: JÜ + AfA als CF-Operativ, Tilgung mindert Finanzierungs-CF. Working Capital, Steuerstundung und CapEx-Reinvest sind nicht modelliert.</div>`;
+
+  // Szenarien
+  html+=`<div class="section-title" style="margin-top:28px;">Szenario-Vergleich (Jahr 1)</div><table class="scen-table"><thead><tr><th>Position</th><th style="background:#D9D9D9">Base Case</th><th style="background:#E2EFDA">Best Case (+15%)</th><th style="background:#FFE0E0">Worst Case (−20%)</th></tr></thead><tbody>`;
+  [['Umsatz Courts','courtRev'],['Weitere Umsätze','weitereRev'],['Gesamtumsatz','totalRev'],['Kosten','totalCost'],['EBITDA','ebitda'],['EBT','ebt'],['Jahresüberschuss','ju']].forEach(([label,key])=>{
+    const isT=label.includes('EBIT')||label.includes('Gesamt')||label.includes('Überschuss');
+    html+=`<tr class="${isT?'total-row':''}"><td>${label}</td><td class="${clr(y1[key])}">${fmt(y1[key])}</td><td class="${clr(yB[key])}">${fmt(yB[key])}</td><td class="${clr(yW[key])}">${fmt(yW[key])}</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+
+  document.getElementById('preview-content').innerHTML=html;
+  // Charts erst rendern wenn DOM da ist
+  setTimeout(()=>renderCharts(inp,years,y1),50);
+}
+
+// ── CHART.JS RENDERING ──
+let _charts={};
+function destroyChart(id){if(_charts[id]){_charts[id].destroy();delete _charts[id];}}
+function renderCharts(inp,years,y1){
+  if(typeof Chart==='undefined')return;
+  const NAVY='#036147',BLUE='#047a5a',LIGHT='#a8d5c4',ORANGE='#e6a017',RED='#c0392b',PURPLE='#9b59b6',TEAL='#1abc9c',GRAY='#888';
+  // Mehrjahresplan-Linie
+  const mjpEl=document.getElementById('chart-mjp');
+  if(mjpEl){
+    destroyChart('mjp');
+    let kum=0;
+    const cumData=years.map(y=>{kum+=(inp.vermieterTyp==='kapital'?y.juDistributable:y.ju);return kum;});
+    _charts.mjp=new Chart(mjpEl,{type:'line',data:{labels:years.map((_,i)=>'J'+(i+1)+' ('+(inp.startYear+i)+')'),datasets:[
+      {label:'Umsatz',data:years.map(y=>y.totalRev),borderColor:NAVY,backgroundColor:NAVY,tension:0.3},
+      {label:'EBITDA',data:years.map(y=>y.ebitda),borderColor:BLUE,backgroundColor:BLUE,tension:0.3},
+      {label:'Jahresüberschuss',data:years.map(y=>inp.vermieterTyp==='kapital'?y.juDistributable:y.ju),borderColor:ORANGE,backgroundColor:ORANGE,tension:0.3},
+      {label:'Kumulierter JÜ',data:cumData,borderColor:PURPLE,backgroundColor:PURPLE,borderDash:[6,4],tension:0.3},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'Mehrjahresplan – '+inp.planYears+' Jahre'},legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1000).toFixed(0)+'k €'}}}}});
+  }
+  // Investitionsverteilung
+  const invEl=document.getElementById('chart-inv');
+  if(invEl){
+    destroyChart('inv');
+    _charts.inv=new Chart(invEl,{type:'doughnut',data:{labels:['Courts','Bau','IT/Einrichtung','Soft Costs','Working Capital'],datasets:[{data:[inp.invCourts,inp.invBau,inp.invIT,inp.invSoft,inp.invWC],backgroundColor:[NAVY,BLUE,LIGHT,ORANGE,GRAY]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  }
+  // Finanzierungsmix
+  const finEl=document.getElementById('chart-fin');
+  if(finEl){
+    destroyChart('fin');
+    _charts.fin=new Chart(finEl,{type:'doughnut',data:{labels:['Eigenkapital','Bankdarlehen','Leasing','Gesellsch.-Darl.','Investoren'],datasets:[{data:[inp.ek,inp.bankAmt,inp.leasAmt,inp.gd1Amt+inp.gd2Amt,inp.invAmt],backgroundColor:[NAVY,RED,ORANGE,TEAL,PURPLE]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  }
+  // Umsatzstruktur Jahr 1
+  const revEl=document.getElementById('chart-rev');
+  if(revEl){
+    destroyChart('rev');
+    _charts.rev=new Chart(revEl,{type:'doughnut',data:{labels:['Court-Umsatz','Weitere Umsätze'],datasets:[{data:[y1.courtRev,y1.weitereRev],backgroundColor:[NAVY,LIGHT]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  }
+}
+
+// ── RENDER SCORING ──
+function renderScoring(demoSc,finSc,gesamtScore,y1,totalInv){
+  document.getElementById('scoring-section').style.display='block';
+  document.getElementById('demo-bar-final').style.width=demoSc.total+'%';
+  document.getElementById('fin-bar-final').style.width=finSc.score+'%';
+  document.getElementById('demo-score-final').textContent=demoSc.total+'/100';
+  document.getElementById('fin-score-final').textContent=finSc.score+'/100';
+  document.getElementById('gesamt-score-num').textContent=gesamtScore;
+
+  const stars=gesamtScore>=85?'★★★★★':gesamtScore>=70?'★★★★☆':gesamtScore>=55?'★★★☆☆':gesamtScore>=40?'★★☆☆☆':'★☆☆☆☆';
+  document.getElementById('gesamt-stars').textContent=stars;
+
+  let tag,tagStyle,emp;
+  if(gesamtScore>=80){tag='🟢 Sehr interessant';tagStyle='background:#E2EFDA;color:#276126;padding:4px 12px;border-radius:12px;font-weight:700;font-size:0.82rem;';emp='Starkes Objekt — alle Kernindikatoren positiv. Weiterverfolgen und Detailanalyse starten.';}
+  else if(gesamtScore>=65){tag='🟡 Interessant';tagStyle='background:#FFF9E0;color:#856404;padding:4px 12px;border-radius:12px;font-weight:700;font-size:0.82rem;';emp='Solides Potenzial vorhanden. Einzelne Faktoren sollten optimiert werden, bevor eine Entscheidung fällt.';}
+  else if(gesamtScore>=50){tag='🟠 Bedingt interessant';tagStyle='background:#FFE8D6;color:#B45309;padding:4px 12px;border-radius:12px;font-weight:700;font-size:0.82rem;';emp='Objekt hat Potenzial, aber merkliche Schwächen in Standort oder Finanzstruktur. Kritische Überprüfung empfohlen.';}
+  else{tag='🔴 Kritisch';tagStyle='background:#FFE0E0;color:#C00000;padding:4px 12px;border-radius:12px;font-weight:700;font-size:0.82rem;';emp='Erhebliche Risiken — entweder ungünstiger Standort oder schwache Finanzperformance. Nicht empfohlen ohne grundlegende Anpassungen.';}
+
+  document.getElementById('gesamt-tag').innerHTML=`<span style="${tagStyle}">${tag}</span>`;
+  document.getElementById('gesamt-empfehlung').textContent=emp;
+
+  const pb=finSc.pb>=999?'>50':finSc.pb.toFixed(1);
+  document.getElementById('score-cards').innerHTML=`
+    <div class="kpi-card" style="text-align:left;border-left:4px solid var(--blue);">
+      <div class="kpi-label">📍 Standort-Score</div>
+      <div class="kpi-value" style="font-size:2rem;">${demoSc.total}<span style="font-size:1rem;color:var(--muted)">/100</span></div>
+      <div class="kpi-unit" style="margin-top:6px;">Gewichtung: 40%</div>
+    </div>
+    <div class="kpi-card" style="text-align:left;border-left:4px solid var(--green);">
+      <div class="kpi-label">📈 Finanz-Score</div>
+      <div class="kpi-value" style="font-size:2rem;">${finSc.score}<span style="font-size:1rem;color:var(--muted)">/100</span></div>
+      <div class="kpi-unit" style="margin-top:6px;">EBITDA-Marge: ${fmtPct(finSc.em)} | Payback: ${pb} J.</div>
+    </div>
+    <div class="kpi-card navy" style="text-align:left;border-left:4px solid #4A90D9;">
+      <div class="kpi-label">🎯 Gesamtscore</div>
+      <div class="kpi-value" style="font-size:2rem;">${gesamtScore}<span style="font-size:1rem;opacity:.7">/100</span></div>
+      <div class="kpi-unit" style="margin-top:6px;">${stars}</div>
+    </div>`;
+}
+
+// ── INVESTOREN RENDITE ──
+function renderInvRendite(inp,years){
+  const sec=document.getElementById('inv-rendite-section');
+  if(inp.invCount===0&&inp.invAmt===0){sec.style.display='none';return;}
+  sec.style.display='block';
+  const gp=inp.gp;
+  let html=`<div class="summary-grid" style="margin-bottom:20px;">
+    <div class="kpi-card"><div class="kpi-label">Investorenkapital gesamt</div><div class="kpi-value">${fmtK(inp.invAmt)}</div><div class="kpi-unit">€</div></div>
+    <div class="kpi-card"><div class="kpi-label">Gewinnbeteiligung</div><div class="kpi-value">${(gp*100).toFixed(0)}%</div><div class="kpi-unit">des Jahresüberschusses</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Auszahlung Jahr 1 (gesamt)</div><div class="kpi-value ${clr(years[0].ju*gp)}">${fmtK(Math.max(0,years[0].ju*gp))}</div><div class="kpi-unit">€ an alle Investoren</div></div>
+  </div>`;
+
+  // Jahrestabelle Investorengewinn
+  html+=`<div class="section-title">Investoren-Gewinnverteilung (${inp.planYears} Jahre)</div><div style="overflow-x:auto;"><table class="year-table"><thead><tr><th>Investor</th>${years.map((_,i)=>`<th>Jahr ${i+1}</th>`).join('')}</tr></thead><tbody>`;
+
+  if(inp.investors&&inp.investors.length>0){
+    inp.investors.forEach(inv=>{
+      html+=`<tr><td>${inv.name} (${(inv.share*100).toFixed(1)}%)</td>`;
+      // FIX #6: Investoren-Auszahlung aus juDistributable (nach Vermieter-Anteil)
+      years.forEach(y=>{const g=Math.max(0,y.juDistributable||y.ju)*gp*inv.share;html+=`<td class="${clr(g)}">${fmt(g)}</td>`;});
+      html+=`</tr>`;
+    });
+  }
+  // Gesamtzeile
+  html+=`<tr class="total-row"><td>Investoren gesamt (${(gp*100).toFixed(0)}%)</td>`;
+  years.forEach(y=>{const g=Math.max(0,y.juDistributable||y.ju)*gp;html+=`<td class="${clr(g)}">${fmt(g)}</td>`;});
+  html+=`</tr>`;
+  // ROI Zeile
+  if(inp.invAmt>0){
+    html+=`<tr style="background:var(--lightblue);font-weight:700;"><td>ROI p.a. auf Invest.</td>`;
+    years.forEach(y=>{const roi=Math.max(0,y.juDistributable||y.ju)*gp/inp.invAmt;html+=`<td>${fmtPct(roi)}</td>`;});
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table></div>`;
+
+  // Vermieter-Beteiligung wenn kapital
+  if(inp.vermieterTyp==='kapital'&&inp.vermieterGewinnPct>0){
+    html+=`<div class="section-title" style="margin-top:20px;">Vermieter-Gewinnbeteiligung (${(inp.vermieterGewinnPct*100).toFixed(1)}% vom JÜ)</div><div style="overflow-x:auto;"><table class="year-table"><thead><tr><th>Position</th>${years.map((_,i)=>`<th>Jahr ${i+1}</th>`).join('')}</tr></thead><tbody><tr><td>${inp.vermieterName||'Vermieter'}</td>`;
+    years.forEach(y=>{const g=Math.max(0,y.ju)*inp.vermieterGewinnPct;html+=`<td class="${clr(g)}">${fmt(g)}</td>`;});
+    html+=`</tr></tbody></table></div>`;
+  }
+
+  document.getElementById('inv-rendite-body').innerHTML=html;
+}
+
+// ════════════════════════════════════════════
+// EXCEL GENERATION
+// ════════════════════════════════════════════
+const S={
+  navy:    {patternType:'solid',fgColor:{rgb:'036147'}},
+  navyDark:{patternType:'solid',fgColor:{rgb:'024d38'}},
+  blue:    {patternType:'solid',fgColor:{rgb:'047a5a'}},
+  sky:     {patternType:'solid',fgColor:{rgb:'EAF5F0'}},
+  gray:    {patternType:'solid',fgColor:{rgb:'E8E4DF'}},
+  gray2:   {patternType:'solid',fgColor:{rgb:'F5F2ED'}},
+  green:   {patternType:'solid',fgColor:{rgb:'D4EDE7'}},
+  red:     {patternType:'solid',fgColor:{rgb:'FFE0E0'}},
+  white:   {patternType:'solid',fgColor:{rgb:'FFFFFF'}},
+  hdr:     {patternType:'solid',fgColor:{rgb:'A8D5C4'}},
+  sccgreen:{patternType:'solid',fgColor:{rgb:'E8F5F0'}},
+  yellow:  {patternType:'solid',fgColor:{rgb:'E8F5F0'}}
+};
+function mkBorder(){return{top:{style:'thin',color:{rgb:'B0CCC4'}},bottom:{style:'thin',color:{rgb:'B0CCC4'}},left:{style:'thin',color:{rgb:'B0CCC4'}},right:{style:'thin',color:{rgb:'B0CCC4'}}};}
+function cell(vl,fill,bold,color,numFmt,align,sz){
+  const c={v:vl,t:typeof vl==='number'?'n':'s'};
+  const st={border:mkBorder()};
+  if(fill)st.fill=fill;
+  st.font={name:'Calibri',sz:sz||10,bold:!!bold,color:{rgb:color||'1a1a1a'}};
+  st.alignment={horizontal:align||'left',vertical:'center',wrapText:false};
+  if(numFmt)st.numFmt=numFmt;
+  c.s=st;return c;
+}
+function ttCell(v){return cell(v,S.navy,true,'FFFFFF',null,'left',13);}
+function hCell(v){return cell(v,S.navy,true,'FFFFFF',null,'left',11);}
+function hCellC(v){return cell(v,S.hdr,true,'024d38',null,'center',10);}
+function hCell2(v){return cell(v,S.blue,true,'FFFFFF',null,'left',10);}
+function iCell(v,f){return cell(v,S.sky,false,'024d38',f||null,'right');}
+function kCell(v,f){return cell(v,S.sccgreen,true,'024d38',f||null,'right');}
+function tCell(v,f){return cell(v,S.gray,true,'1a1a1a',f||null,'right');}
+function rCell(v,f){return cell(v,S.green,true,'024d38',f||null,'right');}
+function wCell(v,f){return cell(v,S.red,true,'C00000',f||null,'right');}
+function nCell(v,f){return cell(v,null,false,'1a1a1a',f||null,'right');}
+function lCell(v){return cell(v,S.gray2,false,'1a1a1a',null,'left');}
+function eCell(){return cell('',S.white,false,'FFFFFF',null,'left');}
+
+// ── NUMBER FORMATS ──
+const EUR  = '#,##0;[Red](#,##0);"-"';
+const EUR2 = '#,##0.00;[Red](#,##0.00);"-"';
+const PCT  = '0.00%';
+const PCT1 = '0.0%';
+
+function aoaToSheet(data,colWidths){
+  const ws=XLSX.utils.aoa_to_sheet(data.map(r=>r.map(c=>c&&c.v!==undefined?c.v:c)));
+  data.forEach((row,ri)=>row.forEach((c,ci)=>{
+    if(c&&c.s){const addr=XLSX.utils.encode_cell({r:ri,c:ci});if(ws[addr])ws[addr].s=c.s;else ws[addr]={v:c.v!==undefined?c.v:'',t:typeof c.v==='number'?'n':'s',s:c.s};if(c.s.numFmt)ws[addr].z=c.s.numFmt;}
+  }));
+  if(colWidths)ws['!cols']=colWidths.map(w=>({wch:w}));
+  return ws;
+}
+
+function generateExcel(){
+  const btn=document.getElementById('dl-btn');
+  btn.disabled=true; btn.textContent='⏳ Wird generiert…';
+  const inp=collectInputs();
+  const y1=calcYear(inp,0,1);
+  const yB=calcYear(inp,0,inp.bestFactor);
+  const yW=calcYear(inp,0,inp.worstFactor);
+  const totalInv=inp.invCourts+inp.invBau+inp.invIT+inp.invSoft+inp.invWC;
+  const demoSc=calcDemoScore();
+  const finSc=calcFinScore(y1,totalInv);
+  const gesamtScore=Math.round(demoSc.total*0.40+finSc.score*0.60);
+
+  const wb=XLSX.utils.book_new();
+
+  // SHEET 1: DASHBOARD
+  const dash=[
+    [hCell(`🎾  PADEL BUSINESS PLAN MATRIX – ${inp.name.toUpperCase()}`),'','','','',''],
+    [cell(`Erstellt: ${new Date().toLocaleDateString('de-DE')} | Startjahr: ${inp.startYear} | Planung: ${inp.planYears} Jahre`,S.hdr,false,'2E75B6',null,'left'),'','','','',''],
+    ['','','','','',''],
+    [hCell2('KEY METRICS – JAHR 1'),'','','','',''],
+    [lCell('Standort / Projektname'),iCell(inp.name),'','',lCell('Gesamtinvestition (€)'),tCell(totalInv,EUR)],
+    [lCell('Anzahl Courts'),iCell(`${inp.dc} DC + ${inp.sc} SC`),'','',lCell('Eigenkapital (€)'),nCell(inp.ek,EUR)],
+    [lCell('Startjahr'),iCell(inp.startYear),'','',lCell('Bankdarlehen (€)'),nCell(inp.bankAmt,EUR)],
+    [lCell('Court-Umsatz Jahr 1 (€)'),rCell(y1.courtRev,EUR),'','',lCell('Investoren (€)'),nCell(inp.invAmt,EUR)],
+    [lCell('Weitere Umsätze Jahr 1 (€)'),rCell(y1.weitereRev,EUR),'','','',''],
+    [lCell('Gesamtumsatz Jahr 1 (€)'),tCell(y1.totalRev,EUR),'','','',''],
+    [lCell('Kosten gesamt Jahr 1 (€)'),tCell(y1.totalCost,EUR),'','','',''],
+    [lCell('EBITDA Jahr 1 (€)'),rCell(y1.ebitda,EUR),'','','',''],
+    [lCell('EBITDA-Marge'),rCell(y1.totalRev>0?y1.ebitda/y1.totalRev:0,PCT),'','','',''],
+    [lCell('Jahresüberschuss Jahr 1 (€)'),rCell(y1.ju,EUR),'','','',''],
+    ['','','','','',''],
+    [hCell('SCORING & STANDORT'),'','','','',''],
+    [lCell('Standort-Score'),iCell(demoSc.total),'','',lCell('Gesamtscore'),kCell(gesamtScore)],
+    [lCell('Finanz-Score'),iCell(finSc.score),'','',lCell('EBITDA-Marge'),nCell(finSc.em,PCT)],
+  ];
+  const dashWs=aoaToSheet(dash,[40,18,4,4,30,18]);
+  dashWs['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}},{s:{r:3,c:0},e:{r:3,c:5}},{s:{r:15,c:0},e:{r:15,c:5}}];
+  XLSX.utils.book_append_sheet(wb,dashWs,'📊 Dashboard');
+
+  // SHEET 2: DEMOGRAFIE
+  const demoSheet=[
+    [hCell('📍  STANDORT & DEMOGRAFISCHE ANALYSE'),'',''],
+    [lCell('Stadt / Gemeinde'),iCell(inp.demoStadt),''],
+    ['','',''],
+    [hCell2('EINGABEPARAMETER'),'',''],
+    [lCell('Einwohnerzahl (Einzugsgebiet)'),kCell(inp.demoPopulation),''],
+    [lCell('Durchschnittseinkommen'),iCell(inp.demoIncome),''],
+    [lCell('Sportaffinität (1–10)'),kCell(inp.demoSport),''],
+    [lCell('Direkte Konkurrenz (Anlagen)'),iCell(inp.demoCompetitors),''],
+    [lCell('ÖPNV-Anbindung'),iCell(inp.demoTransit),''],
+    [lCell('Auto-Anbindung'),iCell(inp.demoAuto||'–'),''],
+    [lCell('Parkplätze Anlage (Anzahl)'),iCell(inp.demoParkAnlage),''],
+    [lCell('Öffentl. Parkplätze (Anzahl)'),iCell(inp.demoParkOeffentl),''],
+    [lCell('Parkplätze gesamt'),nCell((inp.demoParkAnlage||0)+(inp.demoParkOeffentl||0)),''],
+    ['','',''],
+    [hCell2('SCORING-DETAILS (gewichtete Punkte)'),'',''],
+    [hCellC('Kriterium'),hCellC('Rohwert'),hCellC('Gewichtung')],
+    // FIX #4: Gewichtungen passend zur Frontend-Berechnung (Summe = 100%)
+    [lCell('Einwohnerzahl'),nCell(demoSc.popScore),nCell(0.20,PCT)],
+    [lCell('Einkommen'),nCell(demoSc.incScore),nCell(0.15,PCT)],
+    [lCell('Sportaffinität'),nCell(demoSc.sportScore),nCell(0.15,PCT)],
+    [lCell('Konkurrenz (5-8km)'),nCell(demoSc.compScore),nCell(0.20,PCT)],
+    [lCell('ÖPNV'),nCell(demoSc.transitScore),nCell(0.10,PCT)],
+    [lCell('Auto-Anbindung'),nCell(demoSc.autoScore||0),nCell(0.10,PCT)],
+    [lCell('Parken gesamt'),nCell(demoSc.parkingScore),nCell(0.10,PCT)],
+    [tCell('STANDORT-SCORE GESAMT'),tCell(demoSc.total),''],
+  ];
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(demoSheet,[40,16,14]),'📍 Demografie');
+
+  // SHEET 3: ANNAHMEN
+  const annahmen=[
+    [hCell('📋  ANNAHMEN & PARAMETER'),'',''],
+    [hCell2('A. GRUNDDATEN'),'',''],
+    [lCell('Projektname'),kCell(inp.name),''],
+    [lCell('Startjahr'),kCell(inp.startYear),''],
+    [lCell('Planungszeitraum (Jahre)'),kCell(inp.planYears),''],
+    [lCell('MwSt-Satz'),iCell(inp.mwst,PCT),''],
+    [lCell('Preisanpassung p.a.'),iCell(inp.priceAdj,PCT),''],
+    ['','',''],
+    [hCell2('B. COURTS & PREISE'),'',''],
+    [lCell('Double Courts'),kCell(inp.dc),''],
+    [lCell('Single Courts'),kCell(inp.sc),''],
+    [lCell('Öffnungszeiten (h/Tag)'),iCell(inp.openH),''],
+    [lCell('High-Time (h/Tag)'),iCell(inp.htH),''],
+    [lCell('DC High-Time Preis (€/h)'),kCell(inp.dcHT,EUR2),''],
+    [lCell('DC Low-Time Preis (€/h)'),kCell(inp.dcLT,EUR2),''],
+    [lCell('SC High-Time Preis (€/h)'),kCell(inp.scHT,EUR2),''],
+    [lCell('SC Low-Time Preis (€/h)'),kCell(inp.scLT,EUR2),''],
+    ['','',''],
+    [hCell2('C. AUSLASTUNG BASE CASE'),'',''],
+    [hCellC('Kategorie'),...MONTHS_SHORT.map(m=>hCellC(m)),hCellC('Ø')],
+  ];
+  UTIL_KEYS.forEach(key=>{
+    const row=[lCell(key)];let su=0;
+    for(let mi=0;mi<12;mi++){const u=getUtil(key,mi);row.push(iCell(u,PCT));su+=u;}
+    row.push(nCell(su/12,PCT));annahmen.push(row);
+  });
+  annahmen.push(['','','']);
+  annahmen.push([hCell2('D. PERSONALKOSTEN'),'','']);
+  annahmen.push([hCellC('Position'),hCellC('Anzahl'),hCellC('Gehalt/Mon.'),hCellC('Gesamt/Mon.')]);
+  document.querySelectorAll('#pers-table tbody tr:not(.total-row)').forEach(row=>{
+    const pos=row.cells[0].textContent;
+    const anz=parseFloat(row.querySelector('.pers-anz').value)||0;
+    const sal=parseFloat(row.querySelector('.pers-sal').value)||0;
+    annahmen.push([lCell(pos),iCell(anz),iCell(sal,EUR),nCell(anz*sal,EUR)]);
+  });
+  annahmen.push([tCell('Gesamt/Monat'),cell(''),cell(''),tCell(inp.persTotal,EUR)]);
+  annahmen.push(['','','']);
+  annahmen.push([hCell2('E. RAUMKOSTEN (€/Monat)'),'','']);
+  [['Miete (brutto)',v('raum_miete')],['Mietreduktion Vermieter',inp.vermieterMieteRedux],['Energiekosten',v('raum_energie')],['Versicherung',v('raum_vers')],['Reinigung',v('raum_rein')],['Müllentsorgung',v('raum_muell')],['Betriebskosten',v('raum_betr')]].forEach(([l,val])=>annahmen.push([lCell(l),iCell(val,EUR),'']));
+  annahmen.push([tCell('Raumkosten Netto'),tCell(inp.raumTotal,EUR),'']);
+  annahmen.push(['','','']);
+  annahmen.push([hCell2('F. VERMIETER-BETEILIGUNG'),'','']);
+  annahmen.push([lCell('Art der Beteiligung'),iCell(inp.vermieterTyp),'']);
+  annahmen.push([lCell('Vermieter Name'),iCell(inp.vermieterName||'–'),'']);
+  annahmen.push([lCell('Betrag / Prozentsatz'),iCell(inp.vermieterAmt),'']);
+  annahmen.push(['','','']);
+  annahmen.push(['','','']);
+  annahmen.push([hCell2('G. GESELLSCHAFTER & FINANZIERUNG'),'','']);
+  annahmen.push([lCell('Anzahl Gesellschafter'),nCell(parseFloat(document.getElementById('ges_anzahl')?.value)||0),'']);
+  annahmen.push([lCell('Einlage pro Gesellschafter (€)'),nCell(parseFloat(document.getElementById('ges_einlage')?.value)||0,EUR2),'']);
+  annahmen.push([lCell('Anzahl Investoren'),nCell(parseFloat(document.getElementById('inv_anzahl_gesamt')?.value)||0),'']);
+  annahmen.push([lCell('Einlage pro Investor (€)'),nCell(parseFloat(document.getElementById('inv_einlage_pro')?.value)||0,EUR2),'']);
+  annahmen.push(['','','']);
+  annahmen.push([hCellC('Position'),hCellC('Betrag (€)'),hCellC('Rate/Monat (€)')]);
+  [['Eigenkapital',inp.ek,0],['Bankdarlehen',inp.bankAmt,inp.bankRate],['Leasing',inp.leasAmt,inp.leasRate],['GD 1',inp.gd1Amt,inp.gd1Rate],['GD 2',inp.gd2Amt,inp.gd2Rate],['Investoren',inp.invAmt,0]].forEach(([l,a,r])=>annahmen.push([lCell(l),iCell(a,EUR),r?nCell(r,EUR):cell('-')]));
+  annahmen.push([lCell('Abschreibungen p.a. (€)'),kCell(inp.afa,EUR),'']);
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(annahmen,[40,16,16,16,...Array(12).fill(8),10]),'Annahmen');
+
+  // SHEET 4: UMSATZ COURTS
+  const court_rows=[[hCell('🏟️  UMSATZ COURTS – MONATLICH JAHR 1'),...Array(13).fill(cell(''))],[hCellC('Position'),...MONTHS_SHORT.map(m=>hCellC(m)),hCellC('Total')]];
+  [['DC High-Time',true,true],['DC Low-Time',true,false],['SC High-Time',false,true],['SC Low-Time',false,false]].forEach(([label,isDC,isHT])=>{
+    const price=isDC?(isHT?inp.dcHT:inp.dcLT):(isHT?inp.scHT:inp.scLT);
+    const courts=isDC?inp.dc:inp.sc;const hrs=isHT?inp.htH:inp.ltH;
+    const row=[lCell(label)];let tot=0;
+    for(let mi=0;mi<12;mi++){const u=getUtil(label,mi);const val=courts*hrs*DAYS[mi]*u*price;row.push(nCell(val,EUR));tot+=val;}
+    row.push(tCell(tot,EUR));court_rows.push(row);
+  });
+  const totRow=[tCell('UMSATZ COURTS GESAMT')];let cyt=0;
+  for(let mi=0;mi<12;mi++){const v2=calcMonth(inp,mi).courtRev;totRow.push(tCell(v2,EUR));cyt+=v2;}
+  totRow.push(tCell(cyt,EUR));court_rows.push(totRow);
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(court_rows,[36,...Array(12).fill(11),13]),'Umsatz Courts');
+
+  // SHEET 5: G+V JAHR 1 (mit korrekter Zins/Tilgung-Trennung & Jahressteuern)
+  const guv=[[hCell('📈  GEWINN- & VERLUSTRECHNUNG – JAHR 1'),...Array(13).fill(cell(''))],[hCellC('Position'),...MONTHS_SHORT.map(m=>hCellC(m)),hCellC('Total')]];
+  [{label:'Court-Umsatz',key:'courtRev',s:'n'},{label:'Weitere Umsätze',key:'weitereRev',s:'n'},{label:'UMSATZ GESAMT',key:'totalRev',s:'t'},{label:'',key:null},{label:'Personalkosten',key:'pers',s:'n'},{label:'Raumkosten',key:'raum',s:'n'},{label:'Betriebskosten',key:'bet',s:'n'},{label:'Vermieter-Umsatzbeteil.',key:'vermieterCost',s:'n'},{label:'EBITDA',key:'ebitda',s:'r'},{label:'AfA',key:'afa',s:'n'},{label:'EBIT',key:'ebit',s:'n'},{label:'Zinsen + Bankgebühren',key:'geld',s:'n'},{label:'EBT (Vorsteuer)',key:'ebt',s:'n'},{label:'Körperschaftsteuer',key:'kst',s:'n'},{label:'Gewerbesteuer',key:'gew',s:'n'},{label:'Solidaritätszuschlag',key:'soli',s:'n'},{label:'JAHRESÜBERSCHUSS',key:'ju',s:'r'},{label:'',key:null},{label:'nachrichtlich: Tilgung (Cashflow)',key:null,calc:y=>y.tilgung,s:'n'},{label:'nachrichtlich: Kapitaldienst',key:null,calc:y=>y.kapitaldienst,s:'n'}].forEach(line=>{
+    if(!line.key&&!line.calc){guv.push([cell(''),...Array(13).fill(cell(''))]);return;}
+    const row=[lCell(line.label)];
+    if(line.calc){
+      // Jahreswerte verteilt — nur Total-Spalte sinnvoll
+      for(let mi=0;mi<12;mi++)row.push(nCell(line.calc(y1)/12,EUR));
+      row.push((line.s==='t'?tCell:line.s==='r'?rCell:nCell)(line.calc(y1),EUR));
+    } else {
+      let tot=0;
+      y1.months.forEach(m=>{const val=m[line.key]||0;row.push(nCell(val,EUR));tot+=val;});
+      row.push((line.s==='t'?tCell:line.s==='r'?rCell:nCell)(tot,EUR));
+    }
+    guv.push(row);
+  });
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(guv,[36,...Array(12).fill(12),14]),'G+V Jahr 1');
+
+  // SHEET 6: MEHRJAHRESPLAN
+  // FIX #9: Kein Hard-Cap mehr — alle Planjahre exportieren
+  const mjYears=[];
+  for(let i=0;i<inp.planYears;i++)mjYears.push(calcYear(inp,i,1));
+  const mj=[[hCell(`📊  MEHRJAHRESPLAN – ${inp.planYears} JAHRE`),...Array(mjYears.length).fill(cell(''))],[hCellC('Position'),...mjYears.map((_,i)=>hCellC(`Jahr ${i+1}\n${inp.startYear+i}`))]];
+  [{label:'Court-Umsatz',key:'courtRev',s:'n'},{label:'Weitere Umsätze',key:'weitereRev',s:'n'},{label:'UMSATZ GESAMT',key:'totalRev',s:'t'},{label:'KOSTEN GESAMT',key:'totalCost',s:'t'},{label:'EBITDA',key:'ebitda',s:'r'},{label:'EBT',key:'ebt',s:'n'},{label:'JAHRESÜBERSCHUSS',key:'ju',s:'r'}].forEach(line=>{
+    const row=[lCell(line.label)];
+    mjYears.forEach(y=>row.push((line.s==='t'?tCell:line.s==='r'?rCell:nCell)(y[line.key]||0,EUR)));
+    mj.push(row);
+  });
+  let cj=0;const cumRow=[cell('Kumulierter JÜ',S.green,true,'276126',null,'left')];
+  mjYears.forEach(y=>{cj+=y.ju;cumRow.push(rCell(cj,EUR));});mj.push(cumRow);
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(mj,[36,...Array(mjYears.length).fill(14)]),'Mehrjahresplan');
+
+  // SHEET 7: SZENARIEN
+  const scen=[[hCell('🎯  SZENARIO-VERGLEICH'),'','',''],
+    [hCellC(''),hCellC('BASE CASE'),cell('BEST CASE (+15%)',S.green,true,'276126',null,'center'),cell('WORST CASE (−20%)',{patternType:'solid',fgColor:{rgb:'FFE0E0'}},true,'C00000',null,'center')]];
+  for(let yr=1;yr<=3;yr++){
+    const yb=calcYear(inp,yr-1,1),ybe=calcYear(inp,yr-1,inp.bestFactor),ybw=calcYear(inp,yr-1,inp.worstFactor);
+    [{label:'Umsatz Courts',key:'courtRev'},{label:'Weitere Umsätze',key:'weitereRev'},{label:'Gesamtumsatz',key:'totalRev'},{label:'Kosten',key:'totalCost'},{label:'EBITDA',key:'ebitda'},{label:'JAHRESÜBERSCHUSS',key:'ju'}].forEach(line=>{
+      const isT=line.label.includes('EBITDA')||line.label.includes('Gesamt')||line.label.includes('JAHRES');
+      scen.push([lCell(`Jahr ${yr}: ${line.label}`),isT?tCell(yb[line.key]||0,EUR):nCell(yb[line.key]||0,EUR),isT?rCell(ybe[line.key]||0,EUR):nCell(ybe[line.key]||0,EUR),wCell(Math.round(ybw[line.key]||0),EUR)]);
+    });scen.push([cell(''),'','','']);
+  }
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(scen,[36,18,18,18]),'Szenarien');
+
+  // SHEET 8: INVESTOREN
+  const invSheet=[[hCell('💎  INVESTOREN & GEWINNVERTEILUNG'),'','',''],
+    [lCell('Investorenkapital gesamt (€)'),tCell(inp.invAmt,EUR),'',''],
+    [lCell('Gewinnbeteiligung (%)'),iCell(inp.gp,PCT),'',''],
+    ['','','',''],
+    [hCell2('INVESTOREN-AUFSCHLÜSSELUNG'),'','',''],
+    [hCellC('Investor'),hCellC('Kapital (€)'),hCellC('Anteil (%)'),hCellC('')]];
+  if(inp.investors&&inp.investors.length>0){
+    inp.investors.forEach(inv=>invSheet.push([lCell(inv.name),nCell(inv.capital,EUR),nCell(inv.share,PCT),cell('')]));
+  } else {
+    invSheet.push([lCell('Keine Einzelaufschlüsselung'),nCell(inp.invAmt,EUR),nCell(1,PCT),cell('')]);
+  }
+  invSheet.push(['','','','']);
+  invSheet.push([hCell2('JAHRESRENDITE PRO INVESTOR'),'','','']);
+  invSheet.push([hCellC('Investor'),...mjYears.map((_,i)=>hCellC(`Jahr ${i+1}`)),hCellC('Ø ROI p.a.')]);
+  const invList=inp.investors&&inp.investors.length>0?inp.investors:[{name:'Investoren gesamt',capital:inp.invAmt,share:1}];
+  invList.forEach(inv=>{
+    const row=[lCell(inv.name)];let totalG=0;
+    mjYears.forEach(y=>{const g=Math.max(0,y.ju)*inp.gp*inv.share;row.push(nCell(g,EUR));totalG+=g;});
+    const avgRoi=inv.capital>0?totalG/mjYears.length/inv.capital:0;
+    row.push(nCell(avgRoi,PCT));invSheet.push(row);
+  });
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(invSheet,[36,...Array(mjYears.length+1).fill(14)]),'💎 Investoren');
+
+  // SHEET 9: KAPITALBEDARF
+  const cap=[[hCell('🏗️  INVESTITIONS- UND FINANZIERUNGSPLAN'),'',''],
+    [hCellC('Position'),hCellC('Betrag (€)'),hCellC('Quelle')],
+    [lCell('Courts & Equipment'),nCell(inp.invCourts,EUR),lCell('Leasing / EK')],
+    [lCell('Baukosten & Umbau'),nCell(inp.invBau,EUR),lCell('Bankdarlehen')],
+    [lCell('Einrichtung & IT'),nCell(inp.invIT,EUR),lCell('Investoren')],
+    [lCell('Soft Costs'),nCell(inp.invSoft,EUR),lCell('Investoren / GD')],
+    [lCell('Working Capital'),nCell(inp.invWC,EUR),lCell('CF / Investoren')],
+    [tCell('GESAMTINVESTITION'),tCell(totalInv,EUR),cell('')],
+    ['','',''],
+    [hCell2('FINANZIERUNGSQUELLEN'),'',''],
+    [hCellC('Quelle'),hCellC('Betrag (€)'),hCellC('Anteil')],
+    [lCell('Eigenkapital'),nCell(inp.ek,EUR),nCell(totalInv>0?inp.ek/totalInv:0,PCT)],
+    [lCell('Bankdarlehen'),nCell(inp.bankAmt,EUR),nCell(totalInv>0?inp.bankAmt/totalInv:0,PCT)],
+    [lCell('Leasing'),nCell(inp.leasAmt,EUR),nCell(totalInv>0?inp.leasAmt/totalInv:0,PCT)],
+    [lCell('Gesellschafterdarlehen'),nCell(inp.gd1Amt+inp.gd2Amt,EUR),nCell(totalInv>0?(inp.gd1Amt+inp.gd2Amt)/totalInv:0,PCT)],
+    [lCell('Investoren'),nCell(inp.invAmt,EUR),nCell(totalInv>0?inp.invAmt/totalInv:0,PCT)],
+    [tCell('Gesamt Finanzierung'),tCell(inp.ek+inp.bankAmt+inp.leasAmt+inp.gd1Amt+inp.gd2Amt+inp.invAmt,EUR),cell('')]];
+  XLSX.utils.book_append_sheet(wb,aoaToSheet(cap,[44,18,22]),'Kapitalbedarf');
+
+  const safeName=inp.name.replace(/[^a-zA-Z0-9\u00C0-\u017E\s_-]/g,'').replace(/\s+/g,'_');
+  const date=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`${safeName}_BusinessPlan_${date}.xlsx`);
+  btn.disabled=false;btn.innerHTML='<span>✅</span> Erneut generieren';
+  btn.classList.add('downloading');setTimeout(()=>btn.classList.remove('downloading'),600);
+}
+
+// ── GESELLSCHAFTER EK ──
+function calcGesEK(){
+  const n=parseFloat(document.getElementById('ges_anzahl').value)||0;
+  const e=parseFloat(document.getElementById('ges_einlage').value)||0;
+  document.getElementById('fin_ek').value=(n*e).toFixed(2);
+}
+
+// ── INVESTOREN GESAMT ──
+function calcInvGesamt(){
+  const n=parseFloat(document.getElementById('inv_anzahl_gesamt').value)||0;
+  const e=parseFloat(document.getElementById('inv_einlage_pro').value)||0;
+  const total=n*e;
+  document.getElementById('fin_inv').value=total.toFixed(2);
+  // FIX #7: Aufschlüsselungs-Tabelle synchron updaten
+  updateInvTable();
+}
+
+// ── CALC MIETE FROM QM ──
+function calcMiete(){
+  const qm=parseFloat(document.getElementById('raum_qm').value)||0;
+  const preis=parseFloat(document.getElementById('raum_qm_preis').value)||0;
+  if(qm>0&&preis>0){
+    document.getElementById('raum_miete').value=(qm*preis).toFixed(0);
+  }
+}
+
+// ── PNG EXPORT ──
+async function exportPNG(){
+  const btn=document.getElementById('png-btn');
+  btn.disabled=true;btn.textContent='⏳ Erstelle PNG…';
+  const target=document.getElementById('export-target');
+  try{
+    const canvas=await html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#f6f3ee',logging:false});
+    const link=document.createElement('a');
+    const inp=collectInputs();
+    const safe=inp.name.replace(/[^a-zA-Z0-9_-]/g,'_');
+    link.download=`${safe}_BusinessPlan_${new Date().toISOString().slice(0,10)}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(e){alert('PNG-Export fehlgeschlagen: '+e.message);}
+  btn.disabled=false;btn.innerHTML='<span>🖼</span> PNG exportieren';
+}
+
+// ── PDF EXPORT ──
+async function exportPDF(){
+  const btn=document.getElementById('pdf-btn');
+  btn.disabled=true;btn.textContent='⏳ Erstelle PDF…';
+  const target=document.getElementById('export-target');
+  try{
+    const canvas=await html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#f6f3ee',logging:false});
+    const imgData=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth();
+    const ph=pdf.internal.pageSize.getHeight();
+    const ratio=canvas.width/canvas.height;
+    let iw=pw, ih=pw/ratio;
+    if(ih>ph){ih=ph;iw=ph*ratio;}
+    const ox=(pw-iw)/2, oy=(ph-ih)/2;
+    pdf.addImage(imgData,'PNG',ox,oy,iw,ih);
+    const inp=collectInputs();
+    const safe=inp.name.replace(/[^a-zA-Z0-9_-]/g,'_');
+    pdf.save(`${safe}_BusinessPlan_${new Date().toISOString().slice(0,10)}.pdf`);
+  }catch(e){alert('PDF-Export fehlgeschlagen: '+e.message);}
+  btn.disabled=false;btn.innerHTML='<span>📄</span> PDF exportieren';
+}
+
+// ════════════════════════════════════════════
+// LOCALSTORAGE: AUTOSAVE / RESTORE / EXPORT-IMPORT / RESET
+// ════════════════════════════════════════════
+const LS_KEY='padel_bp_state_v1';
+function snapshotInputs(){
+  const state={inputs:{},util:{},personal:[],investors:[]};
+  document.querySelectorAll('input[id], select[id]').forEach(el=>{
+    if(el.id&&!el.id.startsWith('chart-'))state.inputs[el.id]=el.type==='checkbox'?el.checked:el.value;
+  });
+  document.querySelectorAll('.util-input').forEach(el=>{state.util[el.dataset.key+'|'+el.dataset.mi]=el.value;});
+  document.querySelectorAll('#pers-table tbody tr:not(.total-row)').forEach((row,i)=>{
+    state.personal[i]={anz:row.querySelector('.pers-anz').value,sal:row.querySelector('.pers-sal').value};
+  });
+  document.querySelectorAll('#inv-detail-body tr').forEach((row,i)=>{
+    const n=row.querySelector('.inv-name'),c=row.querySelector('.inv-capital');
+    state.investors[i]={name:n?n.value:'',capital:c?c.value:''};
+  });
+  return state;
+}
+function restoreInputs(state){
+  if(!state)return;
+  Object.entries(state.inputs||{}).forEach(([id,val])=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(el.type==='checkbox')el.checked=!!val; else el.value=val;
+  });
+  Object.entries(state.util||{}).forEach(([k,val])=>{
+    const[key,mi]=k.split('|');const el=document.querySelector(`[data-key="${key}"][data-mi="${mi}"]`);if(el)el.value=val;
+  });
+  (state.personal||[]).forEach((p,i)=>{
+    const row=document.querySelectorAll('#pers-table tbody tr:not(.total-row)')[i];
+    if(row){row.querySelector('.pers-anz').value=p.anz;row.querySelector('.pers-sal').value=p.sal;}
+  });
+  // Vermieter-Felder einblenden falls aktiv
+  if(document.getElementById('vermieter_aktiv').checked)updateVermieter();
+  // Investoren-Tabelle neu aufbauen + Werte setzen
+  updateInvTable();
+  (state.investors||[]).forEach((inv,i)=>{
+    const row=document.querySelectorAll('#inv-detail-body tr')[i];
+    if(row){const n=row.querySelector('.inv-name'),c=row.querySelector('.inv-capital');if(n&&inv.name)n.value=inv.name;if(c&&inv.capital)c.value=inv.capital;}
+  });
+  updateInvShares();updatePersTotal();updateFinRates();updateDemoScore();
+}
+let saveTimer=null;
+function autoSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(snapshotInputs()));showSaveToast();}catch(e){console.warn('LocalStorage save failed',e);}},400);
+}
+function showSaveToast(){
+  let t=document.getElementById('save-toast');
+  if(!t){t=document.createElement('div');t.id='save-toast';t.style.cssText='position:fixed;bottom:18px;right:18px;background:#036147;color:white;padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .25s;z-index:9999;pointer-events:none;';t.textContent='💾 Gespeichert';document.body.appendChild(t);}
+  t.style.opacity='1';clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity='0',900);
+}
+function loadFromStorage(){try{const raw=localStorage.getItem(LS_KEY);if(raw)restoreInputs(JSON.parse(raw));}catch(e){console.warn('LocalStorage load failed',e);}}
+function resetAll(){
+  if(!confirm('Alle Eingaben auf Default zurücksetzen? Lokale Speicherung wird gelöscht.'))return;
+  localStorage.removeItem(LS_KEY);location.reload();
+}
+function exportJSON(){
+  const state=snapshotInputs();
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  const name=(document.getElementById('proj_name').value||'Padel_Plan').replace(/[^a-zA-Z0-9_-]/g,'_');
+  a.download=`${name}_${new Date().toISOString().slice(0,10)}.json`;
+  a.href=URL.createObjectURL(blob);a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=e=>{try{const state=JSON.parse(e.target.result);restoreInputs(state);autoSave();alert('✅ Eingaben importiert.');}catch(err){alert('Import fehlgeschlagen: '+err.message);}};
+  reader.readAsText(file);
+}
+// Globaler Input-Listener für Autosave
+document.addEventListener('input',e=>{if(e.target.matches('input, select, textarea'))autoSave();});
+document.addEventListener('change',e=>{if(e.target.matches('input[type=checkbox], select'))autoSave();});
+
+// INIT
+initUtilTable();
+loadFromStorage(); // restore vor Init der abhängigen Tabellen — die laufen unten nochmal
+updateFinRates();
+updatePersTotal();
+updateDemoScore();
+calcGesEK();
+calcInvGesamt(); // baut auch updateInvTable mit auf
+// Falls LocalStorage Investoren-Daten hatte, jetzt Werte zurückspielen
+try{const raw=localStorage.getItem(LS_KEY);if(raw){const st=JSON.parse(raw);(st.investors||[]).forEach((inv,i)=>{const row=document.querySelectorAll('#inv-detail-body tr')[i];if(row){const n=row.querySelector('.inv-name'),c=row.querySelector('.inv-capital');if(n&&inv.name)n.value=inv.name;if(c&&inv.capital)c.value=inv.capital;}});updateInvShares();}}catch(e){}
+</script>
+</body>
+</html>
